@@ -1,30 +1,50 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Plus, GripVertical, Trash2, BarChart3, User, Globe, Share2 } from "lucide-react";
+import { Plus, GripVertical, Trash2, BarChart3, User, Globe, Share2, Camera } from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
-// import { createClient } from "@/lib/supabase/server";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { createClient } from "@/lib/supabase/client"
 
-// export default async function DashboardPage() {
 export default function DashboardPage() {
-    // const supabase = await createClient();
-    // // You can also use getUser() which will be slower.
-    // const { data } = await supabase.auth.getClaims();
-    // const user = data?.claims;
+    const supabase = createClient();
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
     const [links, setLinks] = useState([
         { id: "1", title: "Instagram", url: "https://instagram.com/username" },
         { id: "2", title: "Portofolio", url: "https://mywork.com" },
     ]);
 
+    // State for Profile
+    const [profile, setProfile] = useState({
+        username: " ",
+        bio: " ",
+        avatar: "",
+    });
+    // State for Update Profile
+    const [isUpdating, setIsUpdating] = useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string>(profile.avatar);
+
     // Frontend logic to handle Delete
     const handleDelete = async (id: string) => {
         try {
             // Connect to your backend dev's route
-            const response = await fetch(`/api/v1/user/delete`, {
+            const response = await fetch(`${baseUrl}/api/v1/user/delete`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ linkId: id }),
@@ -38,9 +58,77 @@ export default function DashboardPage() {
         }
     };
 
+    // FETCH DATA FROM SUPABASE ON LOAD
+    useEffect(() => {
+        const getUserData = async () => {
+            const { data: { user }, error } = await supabase.auth.getUser();
+
+            if (error) {
+                console.error("Error fetching user:", error.message);
+                return;
+            }
+
+            if (user?.user_metadata) {
+                const metadata = user.user_metadata;
+                setProfile({
+                    username: metadata.username || "username",
+                    bio: metadata.bio || "My bio is empty",
+                    avatar: metadata.avatar || "",
+                });
+            }
+        };
+
+        getUserData();
+    }, [supabase]);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+            // Create a local preview so the user sees the change immediately
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    // Handle Profile Update
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsUpdating(true);
+
+        try {
+            // Use FormData for Multer compatibility
+            const formData = new FormData();
+            formData.append("username", profile.username);
+            formData.append("bio", profile.bio);
+
+            if (selectedFile) {
+                formData.append("avatar", selectedFile); // 'avatar' must match your multer upload.single('avatar')
+            }
+
+            const response = await fetch(`${baseUrl}/api/v1/user/update`, {
+                method: "POST",
+                body: formData, // Do NOT set Content-Type header; the browser sets it automatically for FormData
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                alert("Profile updated!");
+                // Update the profile state with the new URL returned from the backend
+                if (result.avatarUrl) {
+                    setProfile(prev => ({ ...prev, avatar: result.avatarUrl }));
+                }
+            }
+        } catch (error: any) {
+            console.error("Update failed:", error);
+            alert(error.message);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
-            {/* 1. Header Navigation */}
+            {/* Header Navigation */}
             <nav className="border-b bg-white px-6 py-3 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center gap-8">
                     <h1 className="text-xl font-bold text-[#4F46E5]">LinkHub</h1>
@@ -55,9 +143,69 @@ export default function DashboardPage() {
                         <Share2 className="w-4 h-4 mr-2" /> Share
                     </Button>
                     <LogoutButton />
-                    <div className="w-9 h-9 bg-[#EEF2FF] rounded-full flex items-center justify-center border border-[#6366F1]">
-                        <User className="w-5 h-5 text-[#6366F1]" />
-                    </div>
+                    {/* PROFILE EDIT DIALOG */}
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <button className="w-9 h-9 bg-[#EEF2FF] rounded-full flex items-center justify-center border border-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-colors group">
+                                {profile.avatar ? (
+                                    <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                                ) : (
+                                    <User className="w-5 h-5 text-[#6366F1]" />
+                                )}
+                            </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <form onSubmit={handleUpdateProfile}>
+                                <DialogHeader>
+                                    <DialogTitle>Edit Profile</DialogTitle>
+                                    <DialogDescription>
+                                        Suit your Profile here
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-6 py-4">
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="relative w-20 h-20 bg-slate-100 rounded-full border flex items-center justify-center cursor-pointer hover:bg-slate-200 group overflow-hidden"
+                                    >
+                                        {previewUrl || profile.avatar ? (
+                                            <img src={previewUrl || profile.avatar} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <Camera className="w-6 h-6 text-slate-400 group-hover:text-slate-600" />
+                                        )}
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] text-white font-bold">
+                                            CHANGE
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="username">Username</Label>
+                                        <Input
+                                            id="username"
+                                            value={profile.username}
+                                            onChange={(e) => setProfile({ ...profile, username: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="bio">Bio</Label>
+                                        <Input
+                                            id="bio"
+                                            value={profile.bio}
+                                            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button type="submit" className="bg-[#6366F1] hover:bg-[#4F46E5]">Save Changes</Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </nav>
 
@@ -114,9 +262,14 @@ export default function DashboardPage() {
                     <div className="relative border-[12px] border-[#0F172A] rounded-[3rem] aspect-[9/19] bg-white shadow-2xl overflow-hidden">
                         {/* Phone Screen Content */}
                         <div className="p-6 flex flex-col items-center h-full">
-                            <div className="w-20 h-20 bg-slate-200 rounded-full mb-4 shadow-inner" />
-                            <h3 className="font-bold text-[#0F172A]">@username</h3>
-                            <p className="text-xs text-slate-500 mb-8">Bio description here...</p>
+                            {/* PREVIEW AVATAR */}
+                            <div className="w-20 h-20 bg-slate-200 rounded-full mb-4 shadow-inner overflow-hidden border border-slate-100">
+                                {profile.avatar && (
+                                    <img src={profile.avatar} alt="Preview" className="w-full h-full object-cover" />
+                                )}
+                            </div>
+                            <h3 className="font-bold text-[#0F172A]">@{profile.username}</h3>
+                            <p className="text-[11px] text-slate-500 mb-8 text-center px-4">{profile.bio}</p>
 
                             <div className="w-full space-y-3 overflow-y-auto">
                                 {links.map((link) => (
