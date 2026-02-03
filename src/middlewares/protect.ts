@@ -7,7 +7,9 @@ export const protect = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const token = req.cookies.token;
+  const token = req.headers.authorization?.replace("Bearer ", "");
+  console.log(req.headers.authorization, "ini token");
+
   if (!token) return next(new AppError(401, "Not authenticated"));
 
   const { data, error } = await supabase.auth.getUser(token);
