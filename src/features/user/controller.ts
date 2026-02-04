@@ -33,10 +33,12 @@ export const updateProfile = async (
     throw new AppError(400, error.message);
   }
 
+  const dataAvatar = data.user.user_metadata.avatar;
+
   res.status(200).json({
     status: "success",
     message: "Successfully updated profile",
-    data,
+    data: dataAvatar,
   });
 };
 
@@ -46,13 +48,12 @@ export const deleteUser = async (
   next: NextFunction,
 ) => {
   const userId = (req as any).user.id;
-  const { data, error } = await supabase.auth.admin.deleteUser(userId);
+  const { error } = await supabase.auth.admin.deleteUser(userId);
 
   if (error) throw new AppError(400, error.message);
 
   res.status(200).json({
     status: "success",
     message: "Successfully deleted user",
-    data,
   });
 };

@@ -7,7 +7,7 @@ import {
   deleteLink,
   updateLink,
 } from "../features/link/controller";
-import upload from "../lib/multer";
+// import upload from "../lib/multer";
 import { validate } from "../middlewares/validate";
 import { linkSchema } from "../validators/link";
 
@@ -19,7 +19,7 @@ router.delete("/links/:id", protect, asyncHandler(deleteLink));
 router.post(
   "/links",
   protect,
-  upload.single("icon"),
+  // upload.single("icon"),
   validate(linkSchema),
   asyncHandler(createLink),
 );
@@ -27,7 +27,7 @@ router.post(
 router.patch(
   "/links/:id",
   protect,
-  upload.single("icon"),
+  // upload.single("icon"),
   validate(linkSchema),
   asyncHandler(updateLink),
 );

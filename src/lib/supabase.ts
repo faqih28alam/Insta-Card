@@ -39,25 +39,20 @@ export async function uploadToSupabase(
   return data.publicUrl;
 }
 
-export async function uploadIcon(
-  file: Express.Multer.File,
-  userId: string,
-) {
-  const ext = path.extname(file.originalname);
-  const fileName = `${userId}-${Date.now()}${ext}`;
+// export async function uploadIcon(file: Express.Multer.File, userId: string) {
+//   const ext = path.extname(file.originalname);
+//   const fileName = `${userId}-${Date.now()}${ext}`;
 
-  const { error } = await supabase.storage
-    .from("icons")
-    .upload(fileName, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false,
-    });
+//   const { error } = await supabase.storage
+//     .from("icons")
+//     .upload(fileName, file.buffer, {
+//       contentType: file.mimetype,
+//       upsert: false,
+//     });
 
-  if (error) throw new AppError(400, error.message);
+//   if (error) throw new AppError(400, error.message);
 
-  const { data } = await supabase.storage
-    .from("icons")
-    .getPublicUrl(fileName);
+//   const { data } = await supabase.storage.from("icons").getPublicUrl(fileName);
 
-  return data.publicUrl;
-}
+//   return data.publicUrl;
+// }

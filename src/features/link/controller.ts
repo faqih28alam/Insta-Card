@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase, uploadIcon } from "../../lib/supabase";
+import { supabase } from "../../lib/supabase";
 import { AppError } from "../../utils/error";
 
 // Create
@@ -10,26 +10,30 @@ export const createLink = async (
 ) => {
   const userId = (req as any).user.id;
   const { title, url } = req.body;
-  const icon = req.file;
+  // const icon = req.file;
 
-  let iconUrl: string | undefined;
+  // let iconUrl: string | undefined;
 
-  if (icon) {
-    iconUrl = await uploadIcon(icon, userId);
-  }
+  // if (icon) {
+  //   iconUrl = await uploadIcon(icon, userId);
+  // }
 
-  const { error } = await supabase.from("links").insert({
-    user_id: userId,
-    title,
-    url,
-    icon: iconUrl,
-  });
+  const { data, error } = await supabase
+    .from("links")
+    .insert({
+      user_id: userId,
+      title,
+      url,
+      // icon: iconUrl,
+    })
+    .select("id, title, url");
 
   if (error) throw new AppError(400, error.message);
 
   res.status(200).json({
     status: "success",
     message: "Successfully created link",
+    data: data[0],
   });
 };
 
@@ -64,31 +68,33 @@ export const updateLink = async (
   const userId = (req as any).user.id;
 
   const { title, url } = req.body;
-  const icon = req.file;
+  // const icon = req.file;
 
   if (!title || !url)
     return next(new AppError(400, "Title and url is required"));
 
-  let iconUrl: string | undefined;
+  // let iconUrl: string | undefined;
 
-  if (icon) {
-    iconUrl = await uploadIcon(icon, userId);
-  }
+  // if (icon) {
+  //   iconUrl = await uploadIcon(icon, userId);
+  // }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("links")
     .update({
       title,
       url,
-      icon: iconUrl,
+      // icon: iconUrl,
     })
-    .eq("id", linkId);
+    .eq("id", linkId)
+    .select("id, title, url");
 
   if (error) throw new AppError(400, error.message);
 
   res.status(200).json({
     status: "success",
     message: "Successfully updated link",
+    data: data[0],
   });
 };
 
@@ -99,10 +105,7 @@ export const deleteLink = async (
   next: NextFunction,
 ) => {
   const linkId = req.params.id;
-  const { error } = await supabase
-    .from("links")
-    .delete()
-    .eq("id", linkId);
+  const { error } = await supabase.from("links").delete().eq("id", linkId);
 
   if (error) throw new AppError(400, error.message);
 
