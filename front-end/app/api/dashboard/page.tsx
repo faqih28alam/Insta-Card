@@ -18,18 +18,35 @@ import {
 } from "@/components/ui/dialog";
 import { createClient } from "@/lib/supabase/client"
 
+// Define types
+interface Link {
+    id: string;
+    title: string;
+    url: string;
+}
+
+interface Profile {
+    username: string;
+    bio: string;
+    avatar: string;
+}
+
 export default function DashboardPage() {
     const supabase = createClient();
 
     const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    const [links, setLinks] = useState([
-        { id: "1", title: "Instagram", url: "https://instagram.com/username" },
-        { id: "2", title: "Portofolio", url: "https://mywork.com" },
-    ]);
+    const [links, setLinks] = useState<Link[]>([]);
+
+    // State for Add Link Dialog
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [newLink, setNewLink] = useState<Omit<Link, 'id'>>({
+        title: "",
+        url: "",
+    });
 
     // State for Profile
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState<Profile>({
         username: " ",
         bio: " ",
         avatar: "",
@@ -40,22 +57,103 @@ export default function DashboardPage() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string>(profile.avatar);
 
-    // Frontend logic to handle Delete
-    const handleDelete = async (id: string) => {
-        try {
-            // Connect to your backend dev's route
-            const response = await fetch(`${baseUrl}/api/v1/user/delete`, {
-                method: "DELETE",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ linkId: id }),
-            });
+    // Frontend logic to handle Delete Account
+    // const handleDeleteAccount = async (id: string) => {
+    //     try {
+    //         // Connect to your backend dev's route
+    //         const response = await fetch(`${baseUrl}/api/v1/user/delete`, {
+    //             method: "DELETE",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({ linkId: id }),
+    //         });
 
-            if (response.ok) {
-                setLinks(links.filter((link) => link.id !== id));
-            }
-        } catch (error) {
-            console.error("Failed to delete link", error);
+    //         if (response.ok) {
+    //             setLinks(links.filter((link) => link.id !== id));
+    //         }
+    //     } catch (error) {
+    //         console.error("Failed to delete link", error);
+    //     }
+    // };
+
+    const handleDeleteLink = async () => {
+        console.log("function handleDeleteLink called: not implemented yet");
+        // try {
+        //         // Connect to your backend dev's route
+        //         const response = await fetch(`${baseUrl}/api/v1/user/links/delete`, {
+        //             method: "DELETE",
+        //             headers: { "Content-Type": "application/json" },
+        //             body: JSON.stringify({ linkId: id }),
+        //         });
+
+        //         if (response.ok) {
+        //             setLinks(links.filter((link) => link.id !== id));
+        //         }
+        //     } catch (error) {
+        //         console.error("Failed to delete link", error);
+        //     }
+        // }
+    };
+
+    // Handle Add New Link
+    const handleAddLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Basic validation
+        if (!newLink.title.trim() || !newLink.url.trim()) {
+            alert("Please fill in both title and URL");
+            return;
         }
+
+        try {
+            // Create new link object with a unique ID
+            const linkToAdd = {
+                id: Date.now().toString(), // Simple ID generation
+                title: newLink.title,
+                url: newLink.url,
+            };
+
+            // If you have a backend endpoint for adding links, uncomment and use this:
+            /*
+            const response = await fetch(`${baseUrl}/api/v1/user/links/add`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(linkToAdd),
+            });
+ 
+            if (response.ok) {
+                const result = await response.json();
+                setLinks([...links, result.link]);
+            }
+            */
+
+            // For now, just add to local state
+            setLinks([...links, linkToAdd]);
+
+            // Reset form and close dialog
+            setNewLink({ title: "", url: "" });
+            setIsAddDialogOpen(false);
+        } catch (error) {
+            console.error("Failed to add link", error);
+            alert("Failed to add link. Please try again.");
+        }
+    };
+
+    // Handle inline editing of links
+    const handleUpdateLink = (id: string, field: 'title' | 'url', value: string) => {
+        setLinks(links.map(link =>
+            link.id === id ? { ...link, [field]: value } : link
+        ));
+
+        // If you want to save to backend immediately on change:
+        /*
+        debounce(() => {
+            fetch(`${baseUrl}/api/v1/user/links/update`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ linkId: id, [field]: value }),
+            });
+        }, 500);
+        */
     };
 
     // FETCH DATA FROM SUPABASE ON LOAD
@@ -201,7 +299,9 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button type="submit" className="bg-[#6366F1] hover:bg-[#4F46E5]">Save Changes</Button>
+                                    <Button type="submit" className="bg-[#6366F1] hover:bg-[#4F46E5]" disabled={isUpdating}>
+                                        {isUpdating ? "Saving..." : "Save Changes"}
+                                    </Button>
                                 </DialogFooter>
                             </form>
                         </DialogContent>
@@ -214,9 +314,52 @@ export default function DashboardPage() {
 
                 {/* Editor Side (Left) */}
                 <div className="flex-1 space-y-6">
-                    <Button className="w-full py-6 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl shadow-md text-lg font-semibold">
-                        <Plus className="mr-2 h-5 w-5" /> Add New Link
-                    </Button>
+                    {/* ADD NEW LINK DIALOG */}
+                    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="w-full py-6 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl shadow-md text-lg font-semibold">
+                                <Plus className="mr-2 h-5 w-5" /> Add New Link
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <form onSubmit={handleAddLink}>
+                                <DialogHeader>
+                                    <DialogTitle>Add New Link</DialogTitle>
+                                    <DialogDescription>
+                                        Add a new link to your profile
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="link-title">Title</Label>
+                                        <Input
+                                            id="link-title"
+                                            placeholder="Instagram"
+                                            value={newLink.title}
+                                            onChange={(e) => setNewLink({ ...newLink, title: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="link-url">URL</Label>
+                                        <Input
+                                            id="link-url"
+                                            type="url"
+                                            placeholder="https://instagram.com/username"
+                                            value={newLink.url}
+                                            onChange={(e) => setNewLink({ ...newLink, url: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button type="submit" className="bg-[#6366F1] hover:bg-[#4F46E5]">
+                                        Add Link
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
 
                     <div className="space-y-4">
                         {links.map((link) => (
@@ -229,13 +372,15 @@ export default function DashboardPage() {
                                     <div className="flex-1 space-y-3">
                                         <div className="flex items-center gap-2">
                                             <Input
-                                                defaultValue={link.title}
+                                                value={link.title}
+                                                onChange={(e) => handleUpdateLink(link.id, 'title', e.target.value)}
                                                 className="h-7 font-bold text-[#0F172A] border-none p-0 focus-visible:ring-0 text-base"
                                             />
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Input
-                                                defaultValue={link.url}
+                                                value={link.url}
+                                                onChange={(e) => handleUpdateLink(link.id, 'url', e.target.value)}
                                                 className="h-5 text-[#475569] border-none p-0 focus-visible:ring-0 text-sm italic"
                                             />
                                         </div>
@@ -245,7 +390,7 @@ export default function DashboardPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => handleDelete(link.id)}
+                                            onClick={() => handleDeleteLink()}
                                             className="text-slate-300 hover:text-red-500 hover:bg-red-50"
                                         >
                                             <Trash2 className="w-4 h-4" />
