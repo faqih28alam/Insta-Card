@@ -1,5 +1,7 @@
 // components/ProfileDialog.tsx
-import React from 'react';
+"use client";
+
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,12 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { User, Camera } from 'lucide-react';
-import { Profile } from '@/types';
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { User, Camera } from "lucide-react";
+import { Profile } from "@/types";
+import { publicFetch } from "@/lib/api";
 
 interface ProfileDialogProps {
   profile: Profile;
@@ -25,15 +28,51 @@ interface ProfileDialogProps {
   onProfileChange: (profile: Profile) => void;
 }
 
-export function ProfileDialog({ 
-  profile, 
+export function ProfileDialog({
+  profile,
   onUpdateProfile,
   isUpdating,
   previewUrl,
   fileInputRef,
   onFileChange,
-  onProfileChange
+  onProfileChange,
 }: ProfileDialogProps) {
+  const [username, setUsername] = useState("");
+  const [available, setAvailable] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!username) {
+        setAvailable(false);
+        return;
+      }
+
+      if (username.length < 3) {
+        setAvailable(false);
+        return;
+      }
+
+      if (username === profile.username) {
+        setAvailable(true);
+        return;
+      }
+
+      const checkUsername = async () => {
+        try {
+          const response = await publicFetch(`/api/v1/user/check/${username}`);
+          const data = await response.json();
+          setAvailable(data.available);
+        } catch {
+          setAvailable(false);
+        }
+      };
+
+      checkUsername();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [username, profile.username]);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -81,13 +120,26 @@ export function ProfileDialog({
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="username">Username</Label>
+
+                <div className="h-4">
+                  {username &&
+                    (available ? (
+                      <span className="text-sm text-green-500">Available</span>
+                    ) : (
+                      <span className="text-sm text-red-500">Unavailable</span>
+                    ))}
+                </div>
+              </div>
+
               <Input
                 id="username"
                 value={profile.username}
-                onChange={(e) =>
-                  onProfileChange({ ...profile, username: e.target.value })
-                }
+                onChange={(e) => {
+                  onProfileChange({ ...profile, username: e.target.value });
+                  setUsername(e.target.value);
+                }}
               />
             </div>
             <div className="grid gap-2">
