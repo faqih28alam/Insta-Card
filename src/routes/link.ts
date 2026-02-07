@@ -15,7 +15,7 @@ import { linkSchema, orderSchema } from "../validators/link";
 const router = Router();
 
 router.get("/links", protect, asyncHandler(allLink));
-router.post("/links/:id/click", protect, asyncHandler(linkClicks));
+router.post("/links/:id/click", asyncHandler(linkClicks));
 router.post("/links", protect, validate(linkSchema), asyncHandler(createLink));
 
 router.post(

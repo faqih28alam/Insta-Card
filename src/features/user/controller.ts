@@ -9,12 +9,10 @@ export const checkUsername = async (
   next: NextFunction,
 ) => {
   const rawUsername = req.params.username;
-
   if (typeof rawUsername !== "string") {
-    return res.status(400).json({
-      available: false,
-      message: "Invalid username parameter",
-    });
+    return res
+      .status(400)
+      .json({ available: false, message: "Invalid username parameter" });
   }
 
   const username = rawUsername.toLowerCase().trim();
@@ -22,22 +20,77 @@ export const checkUsername = async (
   if (!/^[a-z0-9_]{3,20}$/.test(username)) {
     return res.status(400).json({
       available: false,
-      message: "Invalid username format",
+      message:
+        "Username must be 3-20 characters, lowercase letters, numbers or underscores",
     });
   }
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("id")
+    .select("username")
     .eq("username", username)
     .maybeSingle();
 
   if (error) {
-    return next(new AppError(500, error.message));
+    console.error("Supabase error:", error);
+    return next(new AppError(500, "Database error"));
   }
 
   return res.status(200).json({
     available: !data,
+    message: !data ? "Username is available" : "Username is taken",
+  });
+};
+
+// Create username
+export const createProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { id, username } = req.body;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert({
+      id,
+      username,
+    })
+    .select("username")
+    .single();
+
+  if (error) throw new AppError(400, error.message);
+
+  res.status(200).json({
+    status: "success",
+    message: "Successfully updated display name",
+    data,
+  });
+};
+
+export const oAuthProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { id, username, display_name } = req.body;
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .upsert({
+      id,
+      username,
+      display_name,
+    }, {
+      onConflict: "id",
+    });
+
+  if (profileError) throw new AppError(500, profileError.message);
+
+  res.status(200).json({
+    status: "success",
+    message: "Successfully fetched profile",
+    data: profile,
   });
 };
 

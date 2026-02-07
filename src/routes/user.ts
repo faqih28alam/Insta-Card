@@ -4,8 +4,10 @@ import { validate } from "../middlewares/validate";
 import { protect } from "../middlewares/protect";
 import {
   checkUsername,
+  createProfile,
   deleteUser,
   getProfile,
+  oAuthProfile,
   updateProfile,
 } from "../features/user/controller";
 import { updateSchema } from "../validators/user";
@@ -14,7 +16,9 @@ import upload from "../lib/multer";
 const router = Router();
 
 router.get("/:username", asyncHandler(getProfile));
-router.get("/check/:username", protect, asyncHandler(checkUsername));
+router.get("/check/:username", asyncHandler(checkUsername));
+router.post("/create", asyncHandler(createProfile));
+router.post("/oauth", asyncHandler(oAuthProfile));
 router.delete("/delete", protect, asyncHandler(deleteUser));
 
 router.patch(
