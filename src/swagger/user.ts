@@ -45,6 +45,48 @@ export const userSwagger = {
     },
   },
 
+  "/user/create": {
+    post: {
+      tags: ["User"],
+      summary: "Create username",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/CreateRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "OK" },
+        400: { description: "Bad request" },
+      },
+    },
+  },
+
+  "/user/oauth": {
+    post: {
+      tags: ["User"],
+      summary: "OAuth user",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/OAuthRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "OK" },
+        400: { description: "Bad request" },
+      },
+    },
+  },
+
   "/user/delete": {
     delete: {
       tags: ["User"],

@@ -68,6 +68,7 @@ export const createProfile = async (
   });
 };
 
+// O Auth create profile
 export const oAuthProfile = async (
   req: Request,
   res: Response,
@@ -75,15 +76,20 @@ export const oAuthProfile = async (
 ) => {
   const { id, username, display_name } = req.body;
 
+  const formUsername = username.toLowerCase().split(" ").slice(0, 2).join("");
+
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .upsert({
-      id,
-      username,
-      display_name,
-    }, {
-      onConflict: "id",
-    });
+    .upsert(
+      {
+        id,
+        username: formUsername,
+        display_name,
+      },
+      {
+        onConflict: "id",
+      },
+    );
 
   if (profileError) throw new AppError(500, profileError.message);
 

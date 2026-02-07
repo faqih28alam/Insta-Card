@@ -10,15 +10,15 @@ import {
   oAuthProfile,
   updateProfile,
 } from "../features/user/controller";
-import { updateSchema } from "../validators/user";
+import { oAuthSchema, updateSchema, usernameSchema } from "../validators/user";
 import upload from "../lib/multer";
 
 const router = Router();
 
 router.get("/:username", asyncHandler(getProfile));
 router.get("/check/:username", asyncHandler(checkUsername));
-router.post("/create", asyncHandler(createProfile));
-router.post("/oauth", asyncHandler(oAuthProfile));
+router.post("/create", validate(usernameSchema), asyncHandler(createProfile));
+router.post("/oauth", validate(oAuthSchema), asyncHandler(oAuthProfile));
 router.delete("/delete", protect, asyncHandler(deleteUser));
 
 router.patch(

@@ -9,3 +9,13 @@ export const updateSchema = Joi.object({
   theme: themeField,
   bio: bioField,
 });
+
+export const usernameSchema = Joi.object({
+  username: usernameField,
+});
+
+export const oAuthSchema = Joi.object({
+  id: Joi.string().required(),
+  username: usernameField,
+  display_name: Joi.string().optional(),
+});
