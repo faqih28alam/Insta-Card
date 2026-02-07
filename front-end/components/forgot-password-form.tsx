@@ -12,8 +12,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Link from "next/link";
 import { useState } from "react";
+import { Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function ForgotPasswordForm({
   className,
@@ -23,6 +24,7 @@ export function ForgotPasswordForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,12 +62,14 @@ export function ForgotPasswordForm({
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="border-none shadow-none w-full max-w-lg mx-auto flex flex-col justify-center h-screen">
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
-            <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your
-              password
+            <CardTitle className="text-4xl font-bold">
+              Reset Your Password
+            </CardTitle>
+            <CardDescription className="text-md">
+              Enter the email address associated with your account and we'll
+              send you a link to reset your password.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -73,29 +77,38 @@ export function ForgotPasswordForm({
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="name@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-14 pl-12 rounded-lg !text-lg focus-visible:outline-none
+                    focus-visible:ring-0 focus-visible:ring-offset-0"
+                    />
+                  </div>
                 </div>
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-xl text-white"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Sending..." : "Send reset email"}
                 </Button>
               </div>
-              <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
-                <Link
-                  href="/auth/login"
-                  className="underline underline-offset-4"
-                >
-                  Login
-                </Link>
-              </div>
+              <Button
+                type="button"
+                onClick={() => router.push("/auth/login")}
+                variant="ghost"
+                className="w-full h-14 text-xl text-gray-500 hover:text-gray-600 hover:bg-transparent"
+              >
+                Back to Login
+              </Button>
             </form>
           </CardContent>
         </Card>

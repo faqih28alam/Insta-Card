@@ -3,3 +3,8 @@ export const apiFetch = (path: string, options?: RequestInit) =>
     ...options,
     credentials: "include",
   });
+
+export const publicFetch = (path: string, options?: RequestInit) =>
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
+    ...options,
+  });
