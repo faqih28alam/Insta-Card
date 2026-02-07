@@ -1,10 +1,13 @@
 // components/LinkEditor.tsx
-import React from 'react';
-import { DndContext, closestCenter } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { AddLinkDialog } from './AddLinkDialog';
-import { SortableLinkItem } from './SortableLinkItem';
-import { Link } from '@/types';
+import React from "react";
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { AddLinkDialog } from "./AddLinkDialog";
+import { SortableLinkItem } from "./SortableLinkItem";
+import { Link } from "@/types";
 
 interface LinkEditorProps {
   links: Link[];
@@ -12,10 +15,10 @@ interface LinkEditorProps {
   onDragEnd: any;
   isAddDialogOpen: boolean;
   onAddDialogChange: (open: boolean) => void;
-  newLink: Omit<Link, 'id'>;
-  onNewLinkChange: (link: Omit<Link, 'id'>) => void;
+  newLink: Omit<Link, "id">;
+  onNewLinkChange: (link: Omit<Link, "id">) => void;
   onAddLink: (e: React.FormEvent) => Promise<void> | void;
-  onUpdateLink: (id: string, field: 'title' | 'url', value: string) => void;
+  onUpdateLink: (id: string, field: "title" | "url", value: string) => void;
   onDeleteLink: () => void;
 }
 
@@ -29,7 +32,7 @@ export function LinkEditor({
   onNewLinkChange,
   onAddLink,
   onUpdateLink,
-  onDeleteLink
+  onDeleteLink,
 }: LinkEditorProps) {
   return (
     <div className="flex-1 space-y-6">
@@ -48,7 +51,9 @@ export function LinkEditor({
         onDragEnd={onDragEnd}
       >
         <SortableContext
-          items={links.map(link => link.id)}
+          items={links
+            .map((link) => link.id)
+            .filter((id): id is string => Boolean(id))}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-4">

@@ -22,7 +22,8 @@ export default function DashboardPage() {
     avatar: "",
   });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newLink, setNewLink] = useState<Omit<Link, "id">>({
+  const [newLink, setNewLink] = useState<Link>({
+    id: "",
     title: "",
     url: "",
   });
@@ -38,7 +39,7 @@ export default function DashboardPage() {
     onReorder: async (newLinks) => {
       // Save new order to backend
       try {
-        await fetch(`${baseUrl}/api/v1/user/links/reorder`, {
+        await apiFetch("/api/v1/links/reorder", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -47,7 +48,7 @@ export default function DashboardPage() {
           body: JSON.stringify({
             links: newLinks.map((link, index) => ({
               id: link.id,
-              display_order: index,
+              order_index: index,
             })),
           }),
         });
@@ -93,7 +94,7 @@ export default function DashboardPage() {
         return;
       }
 
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("username, display_name, bio, avatar_url")
         .eq("id", user.id)
@@ -113,8 +114,6 @@ export default function DashboardPage() {
           display_name: meta.full_name || meta.name || "New User",
         };
 
-        console.log("OAuth profile:", newProfile);
-
         const response = await apiFetch("/api/v1/user/oauth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -127,8 +126,14 @@ export default function DashboardPage() {
           return;
         }
 
+        const username = newProfile.username
+          .toLowerCase()
+          .split(" ")
+          .slice(0, 2)
+          .join("");
+
         setProfile({
-          username: newProfile.username,
+          username: username,
           bio: "My bio is empty",
           avatar: "",
         });
@@ -205,27 +210,25 @@ export default function DashboardPage() {
 
     try {
       const linkToAdd: Link = {
-        id: Date.now().toString(),
         title: newLink.title,
         url: newLink.url,
       };
 
-      // TODO: Uncomment when backend is ready
-      /*
-            const response = await fetch(`${baseUrl}/api/v1/user/links/add`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(linkToAdd),
-            });
-      
-            if (response.ok) {
-              const result = await response.json();
-              setLinks([...links, result.link]);
-            }
-            */
+      const response = await apiFetch("/api/v1/links", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(linkToAdd),
+      });
 
-      setLinks([...links, linkToAdd]);
-      setNewLink({ title: "", url: "" });
+      if (response.ok) {
+        const result = await response.json();
+        setLinks([...links, result.data]);
+      }
+
+      setNewLink({ id: "", title: "", url: "" });
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to add link", error);

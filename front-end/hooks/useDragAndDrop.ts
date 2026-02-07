@@ -1,5 +1,5 @@
 // hooks/useDragAndDrop.ts
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DragEndEvent,
   KeyboardSensor,
@@ -9,6 +9,7 @@ import {
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Link } from "@/types";
+import { createClient } from "@/lib/supabase/client";
 
 interface UseDragAndDropProps {
   initialLinks: Link[];
@@ -20,6 +21,32 @@ export function useDragAndDrop({
   onReorder,
 }: UseDragAndDropProps) {
   const [links, setLinks] = useState<Link[]>(initialLinks);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getLinks = async () => {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+
+      if (error || !user) {
+        console.error("Error fetching user:", error?.message);
+        return;
+      }
+
+      const { data: linksData } = await supabase
+        .from("links")
+        .select("id, title, url")
+        .eq("user_id", user.id);
+
+      if (linksData) {
+        setLinks(linksData);
+      }
+    };
+
+    getLinks();
+  }, [supabase]);
 
   // Configure sensors for drag and drop
   const sensors = useSensors(
