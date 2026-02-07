@@ -50,11 +50,13 @@ export const createProfile = async (
 ) => {
   const { id, username } = req.body;
 
+  const formUsername = username.toLowerCase().split(" ").slice(0, 2).join("");
+
   const { data, error } = await supabase
     .from("profiles")
     .insert({
       id,
-      username,
+      username: formUsername,
     })
     .select("username")
     .single();

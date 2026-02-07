@@ -11,6 +11,7 @@ export const updateSchema = Joi.object({
 });
 
 export const usernameSchema = Joi.object({
+  id: Joi.string().required(),
   username: usernameField,
 });
 
