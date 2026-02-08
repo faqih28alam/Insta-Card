@@ -24,8 +24,7 @@ export const userSwagger = {
   "/user/check/{username}": {
     get: {
       tags: ["User"],
-      summary: "Check username availability (for username update)",
-      security: [{ bearerAuth: [] }],
+      summary: "Check username availability",
       parameters: [
         {
           name: "username",
@@ -87,18 +86,6 @@ export const userSwagger = {
     },
   },
 
-  "/user/delete": {
-    delete: {
-      tags: ["User"],
-      summary: "Delete user",
-      security: [{ bearerAuth: [] }],
-      responses: {
-        200: { description: "OK" },
-        401: { description: "Unauthorized" },
-      },
-    },
-  },
-
   "/user/update": {
     patch: {
       tags: ["User"],
@@ -151,6 +138,18 @@ export const userSwagger = {
       responses: {
         200: { description: "OK" },
         400: { description: "Bad request" },
+        401: { description: "Unauthorized" },
+      },
+    },
+  },
+
+  "/user/delete": {
+    delete: {
+      tags: ["User"],
+      summary: "Delete user",
+      security: [{ bearerAuth: [] }],
+      responses: {
+        200: { description: "OK" },
         401: { description: "Unauthorized" },
       },
     },

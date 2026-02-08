@@ -1,13 +1,59 @@
 export const linksSwagger = {
-  "/links": {
-    get: {
+  // "/links": {
+  //   get: {
+  //     tags: ["Link"],
+  //     summary: "Get all links",
+  //     security: [{ bearerAuth: [] }],
+  //     responses: {
+  //       200: { description: "OK" },
+  //     },
+  //   },
+  //   post: {
+  //     tags: ["Link"],
+  //     summary: "Create link",
+  //     security: [{ bearerAuth: [] }],
+  //     requestBody: {
+  //       required: true,
+  //       content: {
+  //         "application/json": {
+  //           schema: {
+  //             $ref: "#/components/schemas/LinkRequest",
+  //           },
+  //         },
+  //       },
+  //     },
+  //     responses: {
+  //       200: { description: "OK" },
+  //       400: { description: "Bad request" },
+  //       401: { description: "Unauthorized" },
+  //     },
+  //   },
+  // },
+
+  "/links/{id}/click": {
+    post: {
       tags: ["Link"],
-      summary: "Get all links",
-      security: [{ bearerAuth: [] }],
+      summary: "Click analytics",
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          description: "Link ID",
+          required: true,
+          schema: {
+            type: "string",
+          },
+        },
+      ],
       responses: {
         200: { description: "OK" },
+        400: { description: "Bad request" },
+        401: { description: "Unauthorized" },
       },
     },
+  },
+
+  "/links": {
     post: {
       tags: ["Link"],
       summary: "Create link",
@@ -45,30 +91,6 @@ export const linksSwagger = {
           },
         },
       },
-      responses: {
-        200: { description: "OK" },
-        400: { description: "Bad request" },
-        401: { description: "Unauthorized" },
-      },
-    },
-  },
-
-  "/links/{id}/click": {
-    post: {
-      tags: ["Link"],
-      summary: "Click link",
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: "id",
-          in: "path",
-          description: "Link ID",
-          required: true,
-          schema: {
-            type: "string",
-          },
-        },
-      ],
       responses: {
         200: { description: "OK" },
         400: { description: "Bad request" },

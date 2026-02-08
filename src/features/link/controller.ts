@@ -31,26 +31,26 @@ export const createLink = async (
 };
 
 // All Link
-export const allLink = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const userId = (req as any).user.id;
-  const { data, error } = await supabase
-    .from("links")
-    .select("id, title, url, order_index")
-    .eq("user_id", userId)
-    .order("order_index", { ascending: true });
+// export const allLink = async (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction,
+// ) => {
+//   const userId = (req as any).user.id;
+//   const { data, error } = await supabase
+//     .from("links")
+//     .select("id, title, url, order_index")
+//     .eq("user_id", userId)
+//     .order("order_index", { ascending: true });
 
-  if (error) throw new AppError(400, error.message);
+//   if (error) throw new AppError(400, error.message);
 
-  res.status(200).json({
-    status: "success",
-    message: "Successfully fetched links",
-    data,
-  });
-};
+//   res.status(200).json({
+//     status: "success",
+//     message: "Successfully fetched links",
+//     data,
+//   });
+// };
 
 // Reorder link
 export const reorder = async (
@@ -147,14 +147,6 @@ export const linkClicks = async (
     .insert({ link_id: linkId, ip: req.ip })
     .select("id")
     .single();
-
-  const { data: link } = await supabase
-    .from("links")
-    .select("url")
-    .eq("id", linkId)
-    .single();
-
-  res.redirect(link?.url);
 
   if (error) throw new AppError(400, error.message);
 
