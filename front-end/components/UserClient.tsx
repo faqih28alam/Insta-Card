@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Globe } from "lucide-react";
+import { publicFetch } from "@/lib/api";
 
 interface Link {
   id: string;
@@ -37,9 +38,7 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/user/${username}`
-        );
+        const response = await publicFetch(`/api/v1/user/${username}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -69,12 +68,9 @@ export default function PublicProfilePage() {
   const handleLinkClick = async (linkId: string, url: string) => {
     // Track click analytics (optional)
     try {
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/links/${linkId}/click`,
-        {
-          method: "POST",
-        }
-      );
+      await publicFetch(`/api/v1/links/${linkId}/click`, {
+        method: "POST",
+      });
     } catch (err) {
       console.error("Failed to track click:", err);
     }
@@ -102,10 +98,7 @@ export default function PublicProfilePage() {
           <p className="text-xl text-slate-600 mb-8">
             {error || "User not found"}
           </p>
-          <a
-            href="/"
-            className="text-[#6366F1] hover:underline"
-          >
+          <a href="/" className="text-[#6366F1] hover:underline">
             Go to homepage
           </a>
         </div>
@@ -145,22 +138,20 @@ export default function PublicProfilePage() {
           </div>
 
           {/* Username */}
-          <h1
-            className="text-2xl font-bold mb-2"
-            style={{ color: textColor }}
-          >
+          <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>
             @{profile.username}
           </h1>
 
           {/* Display Name (if different from username) */}
-          {profile.display_name && profile.display_name !== profile.username && (
-            <p
-              className="text-lg mb-2"
-              style={{ color: textColor, opacity: 0.8 }}
-            >
-              {profile.display_name}
-            </p>
-          )}
+          {profile.display_name &&
+            profile.display_name !== profile.username && (
+              <p
+                className="text-lg mb-2"
+                style={{ color: textColor, opacity: 0.8 }}
+              >
+                {profile.display_name}
+              </p>
+            )}
 
           {/* Bio */}
           {profile.bio && (
