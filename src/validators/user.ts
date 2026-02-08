@@ -1,7 +1,7 @@
 import Joi from "joi";
 
 const idField = Joi.string().required();
-const usernameField = Joi.string().alphanum().min(3).max(20).optional();
+const usernameField = Joi.string().min(3).max(100).optional();
 const bioField = Joi.string().min(3).max(300).optional();
 
 export const updateSchema = Joi.object({
