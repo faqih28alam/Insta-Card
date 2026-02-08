@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { Globe } from "lucide-react";
+import { Globe, ScanQrCode } from "lucide-react";
 import { publicFetch } from "@/lib/api";
+import QRModal from "./QRModal";
 
 interface Link {
   id: string;
@@ -34,6 +35,7 @@ export default function PublicProfilePage() {
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -110,13 +112,23 @@ export default function PublicProfilePage() {
   const backgroundColor = profile.background_color || "#F8FAFC";
   const textColor = profile.text_color || "#0F172A";
   const buttonColor = profile.button_color || "#6366F1";
+  const qrLink = `${window.location.origin}/${profile.username}`;
 
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 py-12"
       style={{ backgroundColor }}
     >
-      <div className="w-full max-w-[680px]">
+      <div className="w-full h-screen max-w-[680px]">
+        <div className="w-full flex justify-end">
+          <button
+            onClick={() => setOpen(true)}
+            style={{ color: textColor }}
+            title="Scan QR Code"
+          >
+            <ScanQrCode />
+          </button>
+        </div>
         {/* Profile Header */}
         <div className="flex flex-col items-center mb-8">
           {/* Avatar */}
@@ -198,6 +210,7 @@ export default function PublicProfilePage() {
           </span>
         </div>
       </div>
+      <QRModal open={open} onClose={() => setOpen(false)} url={qrLink} />
     </div>
   );
 }
