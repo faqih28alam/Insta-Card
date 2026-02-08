@@ -89,8 +89,6 @@ export const updateLink = async (
 
   const { title, url } = req.body;
 
-  if (!title || !url) throw new AppError(400, "Title and url is required");
-
   const { data, error } = await supabase
     .from("links")
     .update({
