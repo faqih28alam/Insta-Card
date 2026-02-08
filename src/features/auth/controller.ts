@@ -2,6 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import { supabase } from "../../lib/supabase";
 import { AppError } from "../../utils/error";
 
+/**
+ * NOTE:
+ * Supabase authentication is still enforced for core backend logic.
+ * This controller exists solely to control access to API documentation
+ * (e.g. Swagger / OpenAPI) during development and testing.
+ */
+
 export const register = async (
   req: Request,
   res: Response,

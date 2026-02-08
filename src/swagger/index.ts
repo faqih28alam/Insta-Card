@@ -1,7 +1,7 @@
 import swaggerJSDoc, { Options } from "swagger-jsdoc";
 import j2s from "joi-to-swagger";
 import { registerSchema, loginSchema } from "../validators/auth";
-import { updateSchema, usernameSchema, oAuthSchema } from "../validators/user";
+import { updateSchema, usernameSchema, oAuthSchema, themeSchema } from "../validators/user";
 import { linkSchema, orderSchema } from "../validators/link";
 
 import { userSwagger } from "./user";
@@ -15,6 +15,7 @@ const { swagger: linkSwagger } = j2s(linkSchema);
 const { swagger: orderSwagger } = j2s(orderSchema);
 const { swagger: usernameSwagger } = j2s(usernameSchema);
 const { swagger: oAuthSwagger } = j2s(oAuthSchema);
+const { swagger: themeSwagger } = j2s(themeSchema);
 
 const options: Options = {
   definition: {
@@ -45,6 +46,7 @@ const options: Options = {
         OrderRequest: orderSwagger,
         UsernameRequest: usernameSwagger,
         OAuthRequest: oAuthSwagger,
+        ThemeRequest: themeSwagger,
       },
     },
     paths: {

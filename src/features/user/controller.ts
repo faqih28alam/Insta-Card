@@ -9,21 +9,13 @@ export const checkUsername = async (
   next: NextFunction,
 ) => {
   const rawUsername = req.params.username;
-  if (typeof rawUsername !== "string") {
-    return res
-      .status(400)
-      .json({ available: false, message: "Invalid username parameter" });
-  }
+  if (typeof rawUsername !== "string")
+    throw new AppError(400, "Invalid username parameter");
 
   const username = rawUsername.toLowerCase().trim();
 
-  if (!/^[a-z0-9_]{3,20}$/.test(username)) {
-    return res.status(400).json({
-      available: false,
-      message:
-        "Username must be 3-20 characters, lowercase letters, numbers or underscores",
-    });
-  }
+  if (!/^[a-z0-9_]{3,20}$/.test(username))
+    throw new AppError(400, "Invalid username format");
 
   const { data, error } = await supabase
     .from("profiles")
@@ -31,10 +23,7 @@ export const checkUsername = async (
     .eq("username", username)
     .maybeSingle();
 
-  if (error) {
-    console.error("Supabase error:", error);
-    return next(new AppError(500, "Database error"));
-  }
+  if (error) throw new AppError(400, error.message);
 
   return res.status(200).json({
     available: !data,
@@ -147,7 +136,7 @@ export const updateProfile = async (
 ) => {
   const userId = (req as any).user.id;
   const avatar = req.file;
-  const { username, bio, theme } = req.body;
+  const { username, bio } = req.body;
 
   let avatarUrl: string | undefined;
 
@@ -165,7 +154,7 @@ export const updateProfile = async (
     .update({
       username: formUsername,
       bio,
-      theme_id: theme,
+      theme_id: "default",
       avatar_url: avatarUrl,
     })
     .eq("id", userId)
@@ -199,5 +188,35 @@ export const deleteUser = async (
   res.status(200).json({
     status: "success",
     message: "Successfully deleted user",
+  });
+};
+
+// Theme update
+export const theme = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = (req as any).user.id;
+  const theme = req.body;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .update({
+      theme_id: theme.theme_id,
+      background_color: theme.background_color,
+      text_color: theme.text_color,
+      button_color: theme.button_color,
+    })
+    .eq("id", userId)
+    .select("theme_id")
+    .single();
+
+  if (error) throw new AppError(400, error.message);
+
+  res.status(200).json({
+    status: "success",
+    message: "Successfully updated theme",
+    data,
   });
 };

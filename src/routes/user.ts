@@ -8,9 +8,15 @@ import {
   deleteUser,
   getProfile,
   oAuthProfile,
+  theme,
   updateProfile,
 } from "../features/user/controller";
-import { oAuthSchema, updateSchema, usernameSchema } from "../validators/user";
+import {
+  oAuthSchema,
+  themeSchema,
+  updateSchema,
+  usernameSchema,
+} from "../validators/user";
 import upload from "../lib/multer";
 
 const router = Router();
@@ -28,5 +34,7 @@ router.patch(
   validate(updateSchema),
   asyncHandler(updateProfile),
 );
+
+router.patch("/theme", protect, validate(themeSchema), asyncHandler(theme));
 
 export default router;

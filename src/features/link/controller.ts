@@ -61,9 +61,8 @@ export const reorder = async (
   const userId = (req as any).user.id;
   const { links } = req.body;
 
-  if (!Array.isArray(links) || links.length === 0) {
-    return next(new AppError(400, "Invalid payload"));
-  }
+  if (!Array.isArray(links) || links.length === 0)
+    throw new AppError(400, "Invalid payload");
 
   const { data, error } = await supabase.rpc("reorder_links", {
     p_user_id: userId,
@@ -90,8 +89,7 @@ export const updateLink = async (
 
   const { title, url } = req.body;
 
-  if (!title || !url)
-    return next(new AppError(400, "Title and url is required"));
+  if (!title || !url) throw new AppError(400, "Title and url is required");
 
   const { data, error } = await supabase
     .from("links")
@@ -142,9 +140,7 @@ export const linkClicks = async (
   next: NextFunction,
 ) => {
   const linkId = Number(req.params.id);
-  if (isNaN(linkId)) {
-    return next(new AppError(400, "Invalid link ID"));
-  }
+  if (isNaN(linkId)) throw new AppError(400, "Invalid link ID");
 
   const { data, error } = await supabase
     .from("link_clicks")
@@ -160,9 +156,7 @@ export const linkClicks = async (
 
   res.redirect(link?.url);
 
-  if (error) {
-    return next(new AppError(400, error.message));
-  }
+  if (error) throw new AppError(400, error.message);
 
   res.status(200).json({
     status: "success",

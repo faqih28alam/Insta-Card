@@ -132,4 +132,27 @@ export const userSwagger = {
       },
     },
   },
+
+  "/user/theme": {
+    patch: {
+      tags: ["User"],
+      summary: "Update user theme",
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/ThemeRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "OK" },
+        400: { description: "Bad request" },
+        401: { description: "Unauthorized" },
+      },
+    },
+  },
 };
