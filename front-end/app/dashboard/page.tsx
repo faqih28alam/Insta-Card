@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 export default function DashboardPage() {
   const supabase = createClient();
   const router = useRouter();
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
   // State
   const [profile, setProfile] = useState<Profile>({
@@ -259,9 +258,33 @@ export default function DashboardPage() {
   };
 
   // Handle deleting a link
-  const handleDeleteLink = () => {
-    console.log("function handleDeleteLink called: not implemented yet");
-    // TODO: Implement when backend is ready
+  const handleDeleteLink = async (id: string) => {
+    // Ask for confirmation first
+    if (!confirm("Are you sure you want to delete this link?")) {
+      return;
+    }
+
+    try {
+      // Call DELETE endpoint with link ID in URL
+      const response = await apiFetch(`/api/v1/links/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        // Remove from local state
+        setLinks(links.filter((link) => link.id !== id));
+        alert("Link deleted successfully!");
+      } else {
+        const error = await response.json();
+        alert(error.message || "Failed to delete link");
+      }
+    } catch (error) {
+      console.error("Failed to delete link", error);
+      alert("Failed to delete link. Please try again.");
+    }
   };
 
   return (

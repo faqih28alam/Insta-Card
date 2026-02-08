@@ -19,7 +19,7 @@ interface LinkEditorProps {
   onNewLinkChange: (link: Omit<Link, "id">) => void;
   onAddLink: (e: React.FormEvent) => Promise<void> | void;
   onUpdateLink: (id: string, field: "title" | "url", value: string) => void;
-  onDeleteLink: () => void;
+  onDeleteLink: (id: string) => void;
 }
 
 export function LinkEditor({
@@ -59,10 +59,10 @@ export function LinkEditor({
           <div className="space-y-4">
             {links.map((link) => (
               <SortableLinkItem
-                key={link.id}
+                key={link.id ?? ''}
                 link={link}
                 onUpdate={onUpdateLink}
-                onDelete={onDeleteLink}
+                onDelete={() => onDeleteLink(link.id ?? '')}
               />
             ))}
           </div>
