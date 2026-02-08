@@ -8,7 +8,6 @@ export const linkSchema = Joi.object({
   url: urlField,
 });
 
-
 const reorderSchema = Joi.object({
   id: Joi.number().required(),
   order_index: Joi.number().required(),

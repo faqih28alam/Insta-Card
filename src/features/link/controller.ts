@@ -11,14 +11,29 @@ export const createLink = async (
   const userId = (req as any).user.id;
   const { title, url } = req.body;
 
+  const { data: lastLink, error: orderError } = await supabase
+    .from("links")
+    .select("order_index")
+    .eq("user_id", userId)
+    .order("order_index", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (orderError) {
+    throw new AppError(400, orderError.message);
+  }
+
+  const nextOrder = lastLink ? lastLink.order_index + 1 : 1;
+
   const { data, error } = await supabase
     .from("links")
     .insert({
       user_id: userId,
       title,
       url,
+      order_index: nextOrder,
     })
-    .select("id, title, url")
+    .select("id, title, url, order_index")
     .single();
 
   if (error) throw new AppError(400, error.message);
