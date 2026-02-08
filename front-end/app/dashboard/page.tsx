@@ -31,31 +31,7 @@ export default function DashboardPage() {
   const [previewUrl, setPreviewUrl] = useState<string>(profile.avatar);
   const [token, setToken] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null!);
-
-  // Drag and drop hook
-  const { links, setLinks, sensors, handleDragEnd } = useDragAndDrop({
-    initialLinks: [],
-    onReorder: async (newLinks) => {
-      // Save new order to backend
-      try {
-        await apiFetch("/api/v1/links/reorder", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            links: newLinks.map((link, index) => ({
-              id: link.id,
-              order_index: index,
-            })),
-          }),
-        });
-      } catch (error) {
-        console.error("Failed to save new order:", error);
-      }
-    },
-  });
+  const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Clean url from facebook redirect
   useEffect(() => {
@@ -152,6 +128,31 @@ export default function DashboardPage() {
     getUserData();
   }, [supabase]);
 
+  // Drag and drop hook
+  const { links, setLinks, sensors, handleDragEnd } = useDragAndDrop({
+    initialLinks: [],
+    onReorder: async (newLinks) => {
+      // Save new order to backend
+      try {
+        await apiFetch("/api/v1/links/reorder", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            links: newLinks.map((link, index) => ({
+              id: link.id,
+              order_index: index,
+            })),
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to save new order:", error);
+      }
+    },
+  });
+
   // Handle file selection for avatar
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -241,20 +242,29 @@ export default function DashboardPage() {
     field: "title" | "url",
     value: string,
   ) => {
-    setLinks(
-      links.map((link) =>
-        link.id === id ? { ...link, [field]: value } : link,
-      ),
+    // Update UI
+    setLinks((prev) =>
+      prev.map((link) => (link.id === id ? { ...link, [field]: value } : link)),
     );
 
-    // TODO: Uncomment when backend is ready
-    /*
-        fetch(`${baseUrl}/api/v1/user/links/update`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ linkId: id, [field]: value }),
-        });
-        */
+    const key = `${id}-${field}`;
+
+    // Clear debounce
+    if (debounceTimers.current[key]) {
+      clearTimeout(debounceTimers.current[key]);
+    }
+
+    // Send update request
+    debounceTimers.current[key] = setTimeout(() => {
+      apiFetch(`/api/v1/links/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
+    }, 600); // Delay for 600ms
   };
 
   // Handle deleting a link

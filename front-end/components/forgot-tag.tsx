@@ -15,7 +15,7 @@ export default function ForgotTag() {
       </div>
       <div className="fixed bottom-8 w-full max-w-2xl flex justify-center xl:justify-end">
         <Card className="flex gap-5 items-center p-6 bg-white/5 backdrop-blur border border-white/30 shadow-md">
-          <section className="bg-indigo-500/30 p-2 rounded-full">
+          <section className="bg-white/20 p-2 rounded-full">
             <RotateCcwKey className="text-indigo-600" />
           </section>
           <section>
