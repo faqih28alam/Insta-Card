@@ -49,13 +49,17 @@ export function ForgotPasswordForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       {success ? (
-        <Card>
+        <Card className="border-none shadow-none w-full max-w-lg mx-auto flex flex-col justify-center h-screen">
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-4xl font-bold">
+              Check Your Email
+            </CardTitle>
+            <CardDescription className="text-md">
+              Password reset instructions sent
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-md text-muted-foreground">
               If you registered using your email and password, you will receive
               a password reset email.
             </p>

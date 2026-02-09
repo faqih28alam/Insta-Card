@@ -1,11 +1,16 @@
+import ForgotTag from "@/components/forgot-tag";
 import { UpdatePasswordForm } from "@/components/update-password-form";
 
 export default function Page() {
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-sm">
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
+      <section className="hidden lg:block">
+        <ForgotTag />
+      </section>
+
+      <section>
         <UpdatePasswordForm />
-      </div>
+      </section>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 export function ThemeToggle() {
@@ -8,7 +8,7 @@ export function ThemeToggle() {
 
   return (
     <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-        Toggle
+      {theme === "dark" ? <Sun size={18} className="text-white" /> : <Moon size={18} />}
     </button>
   );
 }
