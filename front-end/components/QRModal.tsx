@@ -1,5 +1,6 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useRef } from "react";
+import { X } from "lucide-react";
 
 interface QRModalProps {
   open: boolean;
@@ -32,7 +33,7 @@ export default function QRModal({ open, onClose, url }: QRModalProps) {
           text: "Scan this QR",
           url,
         });
-      } 
+      }
       else {
         await navigator.clipboard.writeText(url);
         alert("Link copied to clipboard!");
@@ -46,10 +47,10 @@ export default function QRModal({ open, onClose, url }: QRModalProps) {
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 w-80 text-center relative">
         <button onClick={onClose} className="absolute top-2 right-3 text-xl">
-          ✕
+          <X className="text-black" />
         </button>
 
-        <h3 className="text-lg font-semibold mb-4">Scan QR</h3>
+        <h3 className="text-lg font-semibold mb-4 text-black">Scan QR</h3>
 
         <div className="flex justify-center mb-4">
           <QRCodeCanvas
@@ -71,7 +72,7 @@ export default function QRModal({ open, onClose, url }: QRModalProps) {
 
           <button
             onClick={handleShare}
-            className="flex-1 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100"
+            className="flex-1 border border-gray-300 py-2 rounded-lg text-sm hover:bg-gray-100 text-black"
           >
             Share
           </button>
