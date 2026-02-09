@@ -14,7 +14,7 @@ export const register = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { email, password, username, fullname } = req.body;
+  const { email, password, username } = req.body;
   const { data: signUpData, error } = await supabase.auth.signUp({
     email,
     password,
@@ -29,7 +29,6 @@ export const register = async (
     .insert({
       id: userId,
       username,
-      display_name: fullname,
       theme_id: "default",
     })
     .select("*")
