@@ -94,7 +94,7 @@ export const userSwagger = {
       requestBody: {
         required: true,
         content: {
-          "application/json": {
+          "multipart/form-data": {
             schema: {
               allOf: [
                 {
