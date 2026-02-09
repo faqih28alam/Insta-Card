@@ -19,6 +19,34 @@ interface Theme {
   button_color: string;
 }
 
+// Static themes
+const PRESET_THEMES: Theme[] = [
+  {
+    id: "default",
+    name: "Default",
+    description: "Classic and professional",
+    background_color: "#F8FAFC",
+    text_color: "#0F172A",
+    button_color: "#6366F1",
+  },
+  {
+    id: "light",
+    name: "Light",
+    description: "Clean and minimal",
+    background_color: "#FFFFFF",
+    text_color: "#1F2937",
+    button_color: "#10B981",
+  },
+  {
+    id: "dark",
+    name: "Dark",
+    description: "Modern and sleek",
+    background_color: "#1F2937",
+    text_color: "#F9FAFB",
+    button_color: "#F59E0B",
+  },
+];
+
 export default function AppearancePage() {
   const supabase = createClient();
   const router = useRouter();
@@ -39,44 +67,11 @@ export default function AppearancePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileInputRef = React.useRef<HTMLInputElement>(null!);
-  const [backgroundHex, setBackgroundHex] = useState("#fff");
-  const [textHex, setTextHex] = useState("#fff");
-  const [buttonHex, setButtonHex] = useState("#fff");
 
-  const THEMES: Theme[] = [
-    {
-      id: "default",
-      name: "Default",
-      description: "Classic and professional",
-      background_color: "#F8FAFC",
-      text_color: "#0F172A",
-      button_color: "#6366F1",
-    },
-    {
-      id: "light",
-      name: "Light",
-      description: "Clean and minimal",
-      background_color: "#FFFFFF",
-      text_color: "#1F2937",
-      button_color: "#10B981",
-    },
-    {
-      id: "dark",
-      name: "Dark",
-      description: "Modern and sleek",
-      background_color: "#1F2937",
-      text_color: "#F9FAFB",
-      button_color: "#F59E0B",
-    },
-    {
-      id: "costum",
-      name: "Costum",
-      description: "User Preferences",
-      background_color: backgroundHex,
-      text_color: textHex,
-      button_color: buttonHex,
-    },
-  ];
+  // Custom color states
+  const [backgroundHex, setBackgroundHex] = useState(" ");
+  const [textHex, setTextHex] = useState(" ");
+  const [buttonHex, setButtonHex] = useState(" ");
 
   // Fetch session token
   useEffect(() => {
@@ -107,7 +102,7 @@ export default function AppearancePage() {
       // Fetch profile from database
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("username, bio, avatar_url, theme_id")
+        .select("username, bio, avatar_url, theme_id, background_color, text_color, button_color")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -121,6 +116,17 @@ export default function AppearancePage() {
 
         // Set selected theme from database
         setSelectedTheme(profileData.theme_id || "default");
+
+        // Load custom colors if they exist
+        if (profileData.background_color) {
+          setBackgroundHex(profileData.background_color);
+        }
+        if (profileData.text_color) {
+          setTextHex(profileData.text_color);
+        }
+        if (profileData.button_color) {
+          setButtonHex(profileData.button_color);
+        }
       }
 
       // Fetch links
@@ -193,10 +199,15 @@ export default function AppearancePage() {
     }
   };
 
-  // Handle theme selection and auto-save
+  // Handle preset theme selection
   const handleThemeSelect = async (themeId: string) => {
-    const selectedThemeData = THEMES.find((t) => t.id === themeId);
+    const selectedThemeData = PRESET_THEMES.find((t) => t.id === themeId);
     if (!selectedThemeData) return;
+
+    // Update custom colors to match preset
+    setBackgroundHex(selectedThemeData.background_color);
+    setTextHex(selectedThemeData.text_color);
+    setButtonHex(selectedThemeData.button_color);
 
     const payload = {
       theme_id: themeId,
@@ -205,14 +216,12 @@ export default function AppearancePage() {
       button_color: selectedThemeData.button_color,
     };
 
-    // DEBUG: See what front-end is sending
     console.log("Sending to Backend:", payload);
 
     setSelectedTheme(themeId);
     setIsSaving(true);
 
     try {
-      // Backend endpoint for theme update
       const response = await apiFetch("/api/v1/user/theme", {
         method: "PATCH",
         headers: {
@@ -222,32 +231,66 @@ export default function AppearancePage() {
         body: JSON.stringify(payload),
       });
 
-      // DEBUG: Check console for response content
-      console.log("Raw Payload:", JSON.stringify(payload, null, 2));
-
       if (!response.ok) {
         alert("Failed to save theme");
         console.log("Failed to save theme");
-        // Revert selection on failure
-        setSelectedTheme(selectedTheme);
       } else {
-        // Optional: Success feedback
         console.log("Theme saved successfully!");
-        alert("Theme saved successfully!");
       }
     } catch (error) {
       console.error("Failed to save theme:", error);
       alert("Failed to save theme");
-      // Revert selection on failure
-      setSelectedTheme(selectedTheme);
+    } finally {
+      setTimeout(() => setIsSaving(false), 500);
+    }
+  };
+
+  // Handle saving costum colors
+  const handleSaveCustomColors = async () => {
+    const payload = {
+      theme_id: "costum",
+      background_color: backgroundHex,
+      text_color: textHex,
+      button_color: buttonHex,
+    };
+
+    console.log("Saving costum colors:", payload);
+
+    setSelectedTheme("costum");
+    setIsSaving(true);
+
+    try {
+      const response = await apiFetch("/api/v1/user/theme", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        alert("Failed to save custom colors");
+      } else {
+        console.log("Custom colors saved successfully!");
+        alert("Custom colors saved successfully!");
+      }
+    } catch (error) {
+      console.error("Failed to save custom colors:", error);
+      alert("Failed to save custom colors");
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
   };
 
   // Get current theme colors for preview
+  // This now uses the live color picker values!
   const getCurrentTheme = () => {
-    return THEMES.find((t) => t.id === selectedTheme) || THEMES[0];
+    return {
+      background_color: backgroundHex,
+      text_color: textHex,
+      button_color: buttonHex,
+    };
   };
 
   const currentTheme = getCurrentTheme();
@@ -276,36 +319,32 @@ export default function AppearancePage() {
             </p>
           </div>
 
-          {/* Theme Templates */}
+          {/* Preset Theme Templates */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-[#0F172A]">
-              Choose a Theme
+              Preset Themes
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {THEMES.map((theme) => (
+              {PRESET_THEMES.map((theme) => (
                 <button
                   key={theme.id}
                   onClick={() => handleThemeSelect(theme.id)}
                   disabled={isSaving}
-                  className={`relative p-6 rounded-xl border-2 transition-all ${
-                    selectedTheme === theme.id
-                      ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow"
-                  } ${
-                    isSaving
+                  className={`relative p-6 rounded-xl border-2 transition-all ${selectedTheme === theme.id
+                    ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:shadow"
+                    } ${isSaving
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"
-                  }`}
+                    }`}
                 >
-                  {/* Checkmark for selected theme */}
                   {selectedTheme === theme.id && (
                     <div className="absolute top-4 right-4 w-6 h-6 bg-[#6366F1] rounded-full flex items-center justify-center">
                       <Check className="w-4 h-4 text-white" />
                     </div>
                   )}
 
-                  {/* Theme Name */}
                   <div className="text-left mb-4">
                     <h4 className="text-lg font-bold text-[#0F172A] mb-1">
                       {theme.name}
@@ -315,13 +354,11 @@ export default function AppearancePage() {
                     </p>
                   </div>
 
-                  {/* Theme Preview */}
                   <div
                     className="w-full h-40 rounded-lg overflow-hidden"
                     style={{ backgroundColor: theme.background_color }}
                   >
                     <div className="p-4 space-y-2.5">
-                      {/* Avatar placeholder */}
                       <div
                         className="w-12 h-12 rounded-full mx-auto"
                         style={{
@@ -329,21 +366,18 @@ export default function AppearancePage() {
                             theme.id === "dark" ? "#374151" : "#E5E7EB",
                         }}
                       />
-                      {/* Username */}
                       <div
                         className="text-xs font-bold text-center"
                         style={{ color: theme.text_color }}
                       >
                         @username
                       </div>
-                      {/* Bio */}
                       <div
                         className="text-[9px] text-center opacity-60"
                         style={{ color: theme.text_color }}
                       >
                         Your bio here
                       </div>
-                      {/* Link buttons */}
                       <div className="space-y-1.5">
                         <div
                           className="w-full py-2 rounded-full text-[10px] font-medium text-white text-center"
@@ -365,6 +399,73 @@ export default function AppearancePage() {
             </div>
           </div>
 
+          {/* Custom Colors Section */}
+          <div className="bg-white rounded-xl p-6 border-2 border-slate-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#0F172A]">
+                Custom Colors
+              </h3>
+              {selectedTheme === "custom" && (
+                <span className="text-xs bg-[#6366F1] text-white px-3 py-1 rounded-full font-medium">
+                  Active
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Background Color */}
+              <div className="flex flex-col items-center">
+                <p className="text-sm font-medium text-slate-700 mb-3">
+                  Background
+                </p>
+                <Wheel
+                  color={backgroundHex}
+                  onChange={(color: any) => setBackgroundHex(color.hex)}
+                />
+                <div className="mt-3 px-3 py-1.5 bg-slate-100 rounded text-xs font-mono text-slate-700">
+                  {backgroundHex}
+                </div>
+              </div>
+
+              {/* Text Color */}
+              <div className="flex flex-col items-center">
+                <p className="text-sm font-medium text-slate-700 mb-3">
+                  Text
+                </p>
+                <Wheel
+                  color={textHex}
+                  onChange={(color: any) => setTextHex(color.hex)}
+                />
+                <div className="mt-3 px-3 py-1.5 bg-slate-100 rounded text-xs font-mono text-slate-700">
+                  {textHex}
+                </div>
+              </div>
+
+              {/* Button Color */}
+              <div className="flex flex-col items-center">
+                <p className="text-sm font-medium text-slate-700 mb-3">
+                  Button
+                </p>
+                <Wheel
+                  color={buttonHex}
+                  onChange={(color: any) => setButtonHex(color.hex)}
+                />
+                <div className="mt-3 px-3 py-1.5 bg-slate-100 rounded text-xs font-mono text-slate-700">
+                  {buttonHex}
+                </div>
+              </div>
+            </div>
+
+            {/* Save Custom Colors Button */}
+            <button
+              onClick={handleSaveCustomColors}
+              disabled={isSaving}
+              className="w-full mt-6 py-3 px-6 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl font-semibold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSaving ? "Saving..." : "Save Custom Colors"}
+            </button>
+          </div>
+
           {/* Save indicator */}
           {isSaving && (
             <div className="flex items-center gap-2 text-[#6366F1] bg-[#EEF2FF] px-4 py-3 rounded-lg">
@@ -376,65 +477,19 @@ export default function AppearancePage() {
           {/* Info */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
-              💡 <strong>Tip:</strong> Theme changes are saved automatically and
-              will appear on your public profile immediately!
+              💡 <strong>Tip:</strong> Pick colors with the color wheels and
+              see live preview. Click "Save Custom Colors" to apply!
             </p>
-          </div>
-
-          {/* Costum background */}
-          <div>
-            <h3 className="text-lg font-semibold text-[#0F172A]">
-              Customize your own background
-            </h3>
-            <div className="flex gap-5">
-              <section>
-                <p>Background</p>
-                <Wheel
-                  style={{
-                    marginLeft: 20,
-                  }}
-                  color={backgroundHex}
-                  onChange={(color: any) =>
-                    setBackgroundHex(color.hex)
-                  }
-                />
-              </section>
-              <section>
-                <p>Text</p>
-                <Wheel
-                  style={{
-                    marginLeft: 20,
-                  }}
-                  color={textHex}
-                  onChange={(color: any) => setTextHex(color.hex)}
-                />
-              </section>
-              <section>
-                <p>Button</p>
-                <Wheel
-                  style={{
-                    marginLeft: 20,
-                  }}
-                  color={buttonHex}
-                  onChange={(color: any) => setButtonHex(color.hex)}
-                />
-              </section>
-            </div>
           </div>
         </div>
 
-        {/* Right Side - Live Preview using PhonePreview component */}
+        {/* Right Side - Live Preview */}
         <div className="lg:w-[320px]">
           <div className="sticky top-24 space-y-4">
-            {/* Using the existing PhonePreview component with theme colors */}
             <PhonePreview
               profile={profile}
               links={links}
-              theme={{
-                background_color: currentTheme.background_color,
-                text_color: currentTheme.text_color,
-                button_color: currentTheme.button_color,
-              }}
+              theme={currentTheme}
             />
           </div>
         </div>
