@@ -1,8 +1,11 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { Profile, Link } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 import {
   LineChart,
@@ -29,6 +32,18 @@ export default function AnalyticsPage() {
   const [analytics, setAnalytics] = useState<LinkAnalytics[]>([]);
   const [dailyClicks, setDailyClicks] = useState<DailyClicks[]>([]);
   const [totalClicks, setTotalClicks] = useState<number>(0);
+
+  // For profile dialog (reusing DashboardHeader)
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const fileInputRef = React.useRef<HTMLInputElement>(null!);
+  const [profile, setProfile] = useState<Profile>({
+    username: "username",
+    bio: "My bio is empty",
+    avatar: "",
+  });
+  const [token, setToken] = useState("")
 
   useEffect(() => {
     const getUserData = async () => {
@@ -90,8 +105,65 @@ export default function AnalyticsPage() {
     getUserData();
   }, [supabase]);
 
+  // Handle profile update (from header)
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("username", profile.username);
+      formData.append("bio", profile.bio);
+
+      if (selectedFile) {
+        formData.append("avatar", selectedFile);
+      }
+
+      const response = await apiFetch("/api/v1/user/update", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert("Profile updated!");
+        if (result.data && result.data.avatar_url) {
+          setProfile((prev) => ({ ...prev, avatar: result.data.avatar_url }));
+          setPreviewUrl(result.data.avatar_url);
+        }
+      } else {
+        alert("Failed to update profile");
+      }
+    } catch (error: any) {
+      console.error("Update failed:", error);
+      alert(error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  // Handle file change for avatar (from header)
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <DashboardHeader
+        profile={profile}
+        onUpdateProfile={handleUpdateProfile}
+        isUpdating={isUpdating}
+        previewUrl={previewUrl}
+        fileInputRef={fileInputRef}
+        onFileChange={handleFileChange}
+        onProfileChange={setProfile}
+      />
       <h1 className="text-2xl font-bold">Analytics</h1>
       <p>Total clicks: {totalClicks}</p>
 
