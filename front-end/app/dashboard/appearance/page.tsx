@@ -8,6 +8,7 @@ import { PhonePreview } from "@/components/PhonePreview";
 import { Check } from "lucide-react";
 import { Profile, Link } from "@/types";
 import { useRouter } from "next/navigation";
+import { Wheel } from "@uiw/react-color";
 
 interface Theme {
   id: string;
@@ -17,33 +18,6 @@ interface Theme {
   text_color: string;
   button_color: string;
 }
-
-const THEMES: Theme[] = [
-  {
-    id: "default",
-    name: "Default",
-    description: "Classic and professional",
-    background_color: "#F8FAFC",
-    text_color: "#0F172A",
-    button_color: "#6366F1",
-  },
-  {
-    id: "light",
-    name: "Light",
-    description: "Clean and minimal",
-    background_color: "#FFFFFF",
-    text_color: "#1F2937",
-    button_color: "#10B981",
-  },
-  {
-    id: "dark",
-    name: "Dark",
-    description: "Modern and sleek",
-    background_color: "#1F2937",
-    text_color: "#F9FAFB",
-    button_color: "#F59E0B",
-  },
-];
 
 export default function AppearancePage() {
   const supabase = createClient();
@@ -65,6 +39,44 @@ export default function AppearancePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const fileInputRef = React.useRef<HTMLInputElement>(null!);
+  const [backgroundHex, setBackgroundHex] = useState("#fff");
+  const [textHex, setTextHex] = useState("#fff");
+  const [buttonHex, setButtonHex] = useState("#fff");
+
+  const THEMES: Theme[] = [
+    {
+      id: "default",
+      name: "Default",
+      description: "Classic and professional",
+      background_color: "#F8FAFC",
+      text_color: "#0F172A",
+      button_color: "#6366F1",
+    },
+    {
+      id: "light",
+      name: "Light",
+      description: "Clean and minimal",
+      background_color: "#FFFFFF",
+      text_color: "#1F2937",
+      button_color: "#10B981",
+    },
+    {
+      id: "dark",
+      name: "Dark",
+      description: "Modern and sleek",
+      background_color: "#1F2937",
+      text_color: "#F9FAFB",
+      button_color: "#F59E0B",
+    },
+    {
+      id: "costum",
+      name: "Costum",
+      description: "User Preferences",
+      background_color: backgroundHex,
+      text_color: textHex,
+      button_color: buttonHex,
+    },
+  ];
 
   // Fetch session token
   useEffect(() => {
@@ -367,6 +379,47 @@ export default function AppearancePage() {
               💡 <strong>Tip:</strong> Theme changes are saved automatically and
               will appear on your public profile immediately!
             </p>
+          </div>
+
+          {/* Costum background */}
+          <div>
+            <h3 className="text-lg font-semibold text-[#0F172A]">
+              Customize your own background
+            </h3>
+            <div className="flex gap-5">
+              <section>
+                <p>Background</p>
+                <Wheel
+                  style={{
+                    marginLeft: 20,
+                  }}
+                  color={backgroundHex}
+                  onChange={(color: any) =>
+                    setBackgroundHex(color.hex)
+                  }
+                />
+              </section>
+              <section>
+                <p>Text</p>
+                <Wheel
+                  style={{
+                    marginLeft: 20,
+                  }}
+                  color={textHex}
+                  onChange={(color: any) => setTextHex(color.hex)}
+                />
+              </section>
+              <section>
+                <p>Button</p>
+                <Wheel
+                  style={{
+                    marginLeft: 20,
+                  }}
+                  color={buttonHex}
+                  onChange={(color: any) => setButtonHex(color.hex)}
+                />
+              </section>
+            </div>
           </div>
         </div>
 
