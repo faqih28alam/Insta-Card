@@ -12,10 +12,6 @@ export const updateSchema = Joi.object({
   bio: bioField,
 });
 
-export const publicLinkSchema = Joi.object({
-  public_link: publicLinkField,
-});
-
 export const profileSchema = Joi.object({
   user_id: idField,
   public_link: publicLinkField,

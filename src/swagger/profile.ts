@@ -32,7 +32,7 @@ export const profileSwagger = {
           description: "Public link",
           required: true,
           schema: {
-            $ref: "#/components/schemas/PublicLinkRequest",
+            type: "string",
           },
         },
       ],

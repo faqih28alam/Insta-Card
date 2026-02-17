@@ -76,11 +76,15 @@ export const oAuthProfile = async (
     .slice(0, 2)
     .join("");
 
-  const { data, error } = await supabase.from("profiles").insert({
-    user_id,
-    public_link: formPublicLink,
-    display_name,
-  });
+  const { data, error } = await supabase
+    .from("profiles")
+    .insert({
+      user_id,
+      public_link: formPublicLink,
+      display_name,
+    })
+    .select("id, public_link, display_name")
+    .single();
 
   if (error) throw new AppError(500, error.message);
 

@@ -15,7 +15,6 @@ import {
   oAuthSchema,
   themeSchema,
   updateSchema,
-  publicLinkSchema,
   profileSchema,
 } from "../validators/profile";
 import upload from "../lib/multer";
@@ -23,11 +22,7 @@ import upload from "../lib/multer";
 const router = Router();
 
 router.get("/:public_link", asyncHandler(getProfile));
-router.get(
-  "/check/:public_link",
-  validate(publicLinkSchema),
-  asyncHandler(checkPublicLink),
-);
+router.get("/check/:public_link", asyncHandler(checkPublicLink));
 router.post("/create", validate(profileSchema), asyncHandler(createProfile));
 router.post("/oauth", validate(oAuthSchema), asyncHandler(oAuthProfile));
 router.delete("/delete", protect, asyncHandler(deleteUser));
@@ -40,11 +35,6 @@ router.patch(
   asyncHandler(updateProfile),
 );
 
-router.patch(
-  "/theme",
-  protect,
-  validate(themeSchema),
-  asyncHandler(theme),
-);
+router.patch("/theme", protect, validate(themeSchema), asyncHandler(theme));
 
 export default router;
