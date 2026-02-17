@@ -1,13 +1,13 @@
-export const userSwagger = {
-  "/user/{username}": {
+export const profileSwagger = {
+  "/profile/{public_link}": {
     get: {
-      tags: ["User"],
+      tags: ["Profile"],
       summary: "Get user profile (public page)",
       parameters: [
         {
-          name: "username",
+          name: "public_link",
           in: "path",
-          description: "Username",
+          description: "Public link",
           required: true,
           schema: {
             type: "string",
@@ -16,44 +16,43 @@ export const userSwagger = {
       ],
       responses: {
         200: { description: "OK" },
-        404: { description: "User not found" },
+        404: { description: "Profile not found" },
       },
     },
   },
 
-  "/user/check/{username}": {
+  "/profile/check/{public_link}": {
     get: {
-      tags: ["User"],
-      summary: "Check username availability",
+      tags: ["Profile"],
+      summary: "Check public link availability",
       parameters: [
         {
-          name: "username",
+          name: "public_link",
           in: "path",
-          description: "Username",
+          description: "Public link",
           required: true,
           schema: {
-            type: "string",
+            $ref: "#/components/schemas/PublicLinkRequest",
           },
         },
       ],
       responses: {
         200: { description: "OK" },
-        400: { description: "Invalid username format" },
-        401: { description: "Unauthorized" },
+        400: { description: "Invalid link format" },
       },
     },
   },
 
-  "/user/create": {
+  "/profile/create": {
     post: {
-      tags: ["User"],
-      summary: "Create username",
+      tags: ["Profile"],
+      summary: "Create profile",
       requestBody: {
         required: true,
         content: {
           "application/json": {
             schema: {
-              $ref: "#/components/schemas/CreateRequest",
+              $ref: "#/components/schemas/ProfileRequest",
             },
           },
         },
@@ -65,9 +64,9 @@ export const userSwagger = {
     },
   },
 
-  "/user/oauth": {
+  "/profile/oauth": {
     post: {
-      tags: ["User"],
+      tags: ["Profile"],
       summary: "OAuth user",
       requestBody: {
         required: true,
@@ -86,10 +85,10 @@ export const userSwagger = {
     },
   },
 
-  "/user/update": {
+  "/profile/update": {
     patch: {
-      tags: ["User"],
-      summary: "Update user",
+      tags: ["Profile"],
+      summary: "Update profile",
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -120,10 +119,10 @@ export const userSwagger = {
     },
   },
 
-  "/user/theme": {
+  "/profile/theme": {
     patch: {
-      tags: ["User"],
-      summary: "Update user theme",
+      tags: ["Profile"],
+      summary: "Update profile theme",
       security: [{ bearerAuth: [] }],
       requestBody: {
         required: true,
@@ -143,9 +142,9 @@ export const userSwagger = {
     },
   },
 
-  "/user/delete": {
+  "/profile/delete": {
     delete: {
-      tags: ["User"],
+      tags: ["Profile"],
       summary: "Delete user",
       security: [{ bearerAuth: [] }],
       responses: {

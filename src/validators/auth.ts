@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-const usernameField = Joi.string().alphanum().min(3).max(100).required();
+const publicLinkField = Joi.string().alphanum().min(3).max(100).required();
 const emailField = Joi.string().email().required();
 const passwordField = Joi.string()
   .pattern(new RegExp("^[a-zA-Z0-9]{8,30}$"))
@@ -10,7 +10,8 @@ const passwordField = Joi.string()
   });
 
 export const registerSchema = Joi.object({
-  username: usernameField,
+  public_link: publicLinkField,
+  display_name: Joi.string().optional(),
   email: emailField,
   password: passwordField,
 });

@@ -14,7 +14,7 @@ export const register = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { email, password, username } = req.body;
+  const { email, password, public_link, display_name } = req.body;
   const { data: signUpData, error } = await supabase.auth.signUp({
     email,
     password,
@@ -24,14 +24,20 @@ export const register = async (
 
   const userId = signUpData.user?.id;
 
+  const formPublicLink = public_link
+    .toLowerCase()
+    .split(" ")
+    .slice(0, 2)
+    .join("");
+
   const { data, error: userError } = await supabase
     .from("profiles")
     .insert({
-      id: userId,
-      username,
-      theme_id: "default",
+      user_id: userId,
+      public_link: formPublicLink,
+      display_name,
     })
-    .select("*")
+    .select()
     .single();
 
   if (userError) throw new AppError(400, userError.message);

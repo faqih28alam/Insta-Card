@@ -48,7 +48,6 @@ export const linksSwagger = {
       responses: {
         200: { description: "OK" },
         400: { description: "Bad request" },
-        401: { description: "Unauthorized" },
       },
     },
   },

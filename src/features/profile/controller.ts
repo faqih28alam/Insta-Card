@@ -2,59 +2,62 @@ import { Request, Response, NextFunction } from "express";
 import { supabase, uploadToSupabase } from "../../lib/supabase";
 import { AppError } from "../../utils/error";
 
-// Username check
-export const checkUsername = async (
+// Public Link check
+export const checkPublicLink = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const rawUsername = req.params.username;
-  if (typeof rawUsername !== "string")
-    throw new AppError(400, "Invalid username parameter");
+  const rawLink = req.params.public_link;
 
-  const username = rawUsername.toLowerCase().trim();
+  if (typeof rawLink !== "string")
+    throw new AppError(400, "Invalid link parameter");
 
-  if (!/^[a-z0-9_]{3,20}$/.test(username))
-    throw new AppError(400, "Invalid username format");
+  const publicLink = rawLink.toLowerCase().trim();
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("username")
-    .eq("username", username)
+    .select("public_link")
+    .eq("public_link", publicLink)
     .maybeSingle();
 
   if (error) throw new AppError(400, error.message);
 
   return res.status(200).json({
     available: !data,
-    message: !data ? "Username is available" : "Username is taken",
+    message: !data ? "link is available" : "link is taken",
   });
 };
 
-// Create username
+// Create public link
 export const createProfile = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { id, username } = req.body;
+  const { user_id, public_link, display_name } = req.body;
 
-  const formUsername = username.toLowerCase().split(" ").slice(0, 2).join("");
+  const formPublicLink = public_link
+    .toLowerCase()
+    .split(" ")
+    .slice(0, 2)
+    .join("");
 
   const { data, error } = await supabase
     .from("profiles")
     .insert({
-      id,
-      username: formUsername,
+      user_id,
+      public_link: formPublicLink,
+      display_name,
     })
-    .select("username")
+    .select("public_link")
     .single();
 
   if (error) throw new AppError(400, error.message);
 
   res.status(200).json({
     status: "success",
-    message: "Successfully updated display name",
+    message: "Successfully created public link",
     data,
   });
 };
@@ -65,29 +68,26 @@ export const oAuthProfile = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { id, username, display_name } = req.body;
+  const { user_id, public_link, display_name } = req.body;
 
-  const formUsername = username.toLowerCase().split(" ").slice(0, 2).join("");
+  const formPublicLink = public_link
+    .toLowerCase()
+    .split(" ")
+    .slice(0, 2)
+    .join("");
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .upsert(
-      {
-        id,
-        username: formUsername,
-        display_name,
-      },
-      {
-        onConflict: "id",
-      },
-    );
+  const { data, error } = await supabase.from("profiles").insert({
+    user_id,
+    public_link: formPublicLink,
+    display_name,
+  });
 
-  if (profileError) throw new AppError(500, profileError.message);
+  if (error) throw new AppError(500, error.message);
 
   res.status(200).json({
     status: "success",
     message: "Successfully fetched profile",
-    data: profile,
+    data,
   });
 };
 
@@ -97,21 +97,20 @@ export const getProfile = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const username = req.params.username;
+  const publicLink = req.params.public_link;
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("*")
-    .eq("username", username)
-    .eq("is_public", true)
+    .select()
+    .eq("public_link", publicLink)
     .maybeSingle();
 
   if (profileError) throw new AppError(500, profileError.message);
-  if (!profile) throw new AppError(404, "User not found");
+  if (!profile) throw new AppError(404, "Profile not found");
 
   const { data: links, error: linksError } = await supabase
     .from("links")
     .select("id, title, url, order_index")
-    .eq("user_id", profile.id)
+    .eq("public_id", profile.id)
     .order("order_index", { ascending: true });
 
   if (linksError) throw new AppError(500, linksError.message);
@@ -128,7 +127,7 @@ export const getProfile = async (
   });
 };
 
-// Update user
+// Update profile
 export const updateProfile = async (
   req: Request,
   res: Response,
@@ -136,7 +135,7 @@ export const updateProfile = async (
 ) => {
   const userId = (req as any).user.id;
   const avatar = req.file;
-  const { username, bio } = req.body;
+  const { public_id, public_link, display_name, bio } = req.body;
 
   let avatarUrl: string | undefined;
 
@@ -144,28 +143,29 @@ export const updateProfile = async (
     avatarUrl = await uploadToSupabase(avatar, userId);
   }
 
-  const formUsername = username.toLowerCase().trim();
-  if (!/^[a-z0-9_]{3,20}$/.test(formUsername)) {
-    throw new AppError(400, "Invalid username format");
-  }
+  const formPublicLink = public_link
+    .toLowerCase()
+    .split(" ")
+    .slice(0, 2)
+    .join("");
 
   const { data, error } = await supabase
     .from("profiles")
     .update({
-      username: formUsername,
+      public_link: formPublicLink,
+      display_name,
       bio,
-      theme_id: "default",
       avatar_url: avatarUrl,
     })
-    .eq("id", userId)
+    .eq("id", public_id)
     .select("avatar_url")
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw new AppError(400, error.message);
   }
 
-  const dataAvatar = data.avatar_url;
+  const dataAvatar = data?.avatar_url;
 
   res.status(200).json({
     status: "success",
@@ -197,7 +197,6 @@ export const theme = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userId = (req as any).user.id;
   const theme = req.body;
 
   const { data, error } = await supabase
@@ -207,8 +206,10 @@ export const theme = async (
       background_color: theme.background_color,
       text_color: theme.text_color,
       button_color: theme.button_color,
+      avatar_radius: theme.avatar_radius,
+      button_radius: theme.button_radius,
     })
-    .eq("id", userId)
+    .eq("id", theme.public_id)
     .select("theme_id")
     .single();
 

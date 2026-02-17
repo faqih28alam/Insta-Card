@@ -1,10 +1,16 @@
 import swaggerJSDoc, { Options } from "swagger-jsdoc";
 import j2s from "joi-to-swagger";
 import { registerSchema, loginSchema } from "../validators/auth";
-import { updateSchema, usernameSchema, oAuthSchema, themeSchema } from "../validators/user";
+import {
+  updateSchema,
+  publicLinkSchema,
+  profileSchema,
+  oAuthSchema,
+  themeSchema,
+} from "../validators/profile";
 import { linkSchema, orderSchema } from "../validators/link";
 
-import { userSwagger } from "./user";
+import { profileSwagger } from "./profile";
 import { authSwagger } from "./auth";
 import { linksSwagger } from "./link";
 
@@ -13,7 +19,8 @@ const { swagger: loginSwagger } = j2s(loginSchema);
 const { swagger: updateSwagger } = j2s(updateSchema);
 const { swagger: linkSwagger } = j2s(linkSchema);
 const { swagger: orderSwagger } = j2s(orderSchema);
-const { swagger: usernameSwagger } = j2s(usernameSchema);
+const { swagger: publicLinkSwagger } = j2s(publicLinkSchema);
+const { swagger: createProfileSwagger } = j2s(profileSchema);
 const { swagger: oAuthSwagger } = j2s(oAuthSchema);
 const { swagger: themeSwagger } = j2s(themeSchema);
 
@@ -44,14 +51,15 @@ const options: Options = {
         UpdateRequest: updateSwagger,
         LinkRequest: linkSwagger,
         OrderRequest: orderSwagger,
-        UsernameRequest: usernameSwagger,
+        PublicLinkRequest: publicLinkSwagger,
+        ProfileRequest: createProfileSwagger,
         OAuthRequest: oAuthSwagger,
         ThemeRequest: themeSwagger,
       },
     },
     paths: {
       ...authSwagger,
-      ...userSwagger,
+      ...profileSwagger,
       ...linksSwagger,
     },
   },

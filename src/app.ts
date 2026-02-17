@@ -8,7 +8,7 @@ import { errorHandler } from "./middlewares/error";
 
 // Routes
 import authRouter from "./routes/auth";
-import userRouter from "./routes/user";
+import profileRouter from "./routes/profile";
 import linkRouter from "./routes/link";
 
 dotenv.config();
@@ -23,7 +23,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/user", userRouter);
+app.use("/api/v1/profile", profileRouter);
 app.use("/api/v1", linkRouter);
 
 // Testing express

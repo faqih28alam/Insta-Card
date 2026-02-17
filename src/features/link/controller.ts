@@ -8,13 +8,12 @@ export const createLink = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userId = (req as any).user.id;
-  const { title, url } = req.body;
+  const { id, title, url } = req.body;
 
   const { data: lastLink, error: orderError } = await supabase
     .from("links")
     .select("order_index")
-    .eq("user_id", userId)
+    .eq("public_id", id)
     .order("order_index", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -28,7 +27,7 @@ export const createLink = async (
   const { data, error } = await supabase
     .from("links")
     .insert({
-      user_id: userId,
+      public_id: id,
       title,
       url,
       order_index: nextOrder,
@@ -73,14 +72,13 @@ export const reorder = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userId = (req as any).user.id;
-  const { links } = req.body;
+  const { id, links } = req.body;
 
   if (!Array.isArray(links) || links.length === 0)
     throw new AppError(400, "Invalid payload");
 
   const { data, error } = await supabase.rpc("reorder_links", {
-    p_user_id: userId,
+    p_public_id: id,
     p_links: links,
   });
 
@@ -100,8 +98,6 @@ export const updateLink = async (
   next: NextFunction,
 ) => {
   const linkId = req.params.id;
-  const userId = (req as any).user.id;
-
   const { title, url } = req.body;
 
   const { data, error } = await supabase
@@ -111,7 +107,6 @@ export const updateLink = async (
       url,
     })
     .eq("id", linkId)
-    .eq("user_id", userId)
     .select("id, title, url, order_index")
     .single();
 
@@ -131,12 +126,10 @@ export const deleteLink = async (
   next: NextFunction,
 ) => {
   const linkId = req.params.id;
-  const userId = (req as any).user.id;
   const { error } = await supabase
     .from("links")
     .delete()
     .eq("id", linkId)
-    .eq("user_id", userId);
 
   if (error) throw new AppError(400, error.message);
 
