@@ -14,7 +14,7 @@ interface Link {
 }
 
 interface Profile {
-  username: string;
+  public_link: string;
   display_name?: string;
   bio?: string;
   avatar_url?: string;
@@ -30,7 +30,8 @@ interface ProfileData {
 
 export default function PublicProfilePage() {
   const params = useParams();
-  const username = params.username as string;
+  // ✅ FIX 2: param name matches your folder [public_link], not [username]
+  const public_link = params.public_link as string;
 
   const [data, setData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ export default function PublicProfilePage() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await publicFetch(`/api/v1/user/${username}`);
+        const response = await publicFetch(`/api/v1/profile/${public_link}`);
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -62,13 +63,12 @@ export default function PublicProfilePage() {
       }
     };
 
-    if (username) {
+    if (public_link) {
       fetchProfile();
     }
-  }, [username]);
+  }, [public_link]);
 
   const handleLinkClick = async (linkId: string, url: string) => {
-    // Track click analytics (optional)
     try {
       await publicFetch(`/api/v1/links/${linkId}/click`, {
         method: "POST",
@@ -76,8 +76,6 @@ export default function PublicProfilePage() {
     } catch (err) {
       console.error("Failed to track click:", err);
     }
-
-    // Open link in new tab
     window.open(url, "_blank");
   };
 
@@ -112,7 +110,9 @@ export default function PublicProfilePage() {
   const backgroundColor = profile.background_color || "#F8FAFC";
   const textColor = profile.text_color || "#0F172A";
   const buttonColor = profile.button_color || "#6366F1";
-  const qrLink = `${window.location.origin}/${profile.username}`;
+
+  // ✅ FIX 4: Use public_link not username for QR URL
+  const qrLink = `${window.location.origin}/${profile.public_link}`;
 
   return (
     <div
@@ -129,6 +129,7 @@ export default function PublicProfilePage() {
             <ScanQrCode />
           </button>
         </div>
+
         {/* Profile Header */}
         <div className="flex flex-col items-center mb-8">
           {/* Avatar */}
@@ -136,7 +137,7 @@ export default function PublicProfilePage() {
             {profile.avatar_url ? (
               <img
                 src={profile.avatar_url}
-                alt={profile.username}
+                alt={profile.public_link}
                 className="w-full h-full object-cover"
               />
             ) : (
@@ -144,26 +145,26 @@ export default function PublicProfilePage() {
                 className="w-full h-full flex items-center justify-center text-2xl font-bold"
                 style={{ color: textColor }}
               >
-                {profile.username.charAt(0).toUpperCase()}
+                {/* ✅ FIX 5: Use public_link not username for avatar fallback */}
+                {profile.public_link.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
 
-          {/* Username */}
+          {/* Public Link */}
           <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>
-            @{profile.username}
+            @{profile.public_link}
           </h1>
 
-          {/* Display Name (if different from username) */}
-          {profile.display_name &&
-            profile.display_name !== profile.username && (
-              <p
-                className="text-lg mb-2"
-                style={{ color: textColor, opacity: 0.8 }}
-              >
-                {profile.display_name}
-              </p>
-            )}
+          {/* ✅ FIX 6: Show display_name if it exists (separate from public_link) */}
+          {profile.display_name && (
+            <p
+              className="text-lg mb-2"
+              style={{ color: textColor, opacity: 0.8 }}
+            >
+              {profile.display_name}
+            </p>
+          )}
 
           {/* Bio */}
           {profile.bio && (
@@ -210,6 +211,7 @@ export default function PublicProfilePage() {
           </span>
         </div>
       </div>
+
       <QRModal open={open} onClose={() => setOpen(false)} url={qrLink} />
     </div>
   );

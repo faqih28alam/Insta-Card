@@ -14,12 +14,10 @@ interface PhonePreviewProps {
 }
 
 export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
-  // Use theme colors if provided, otherwise use defaults
   const backgroundColor = theme?.background_color || '#F8FAFC';
   const textColor = theme?.text_color || '#0F172A';
   const buttonColor = theme?.button_color || '#6366F1';
 
-  // Function to open public profile
   const handleClick = () => {
     const url = `${window.location.origin}/${profile.public_link}`;
     window.open(url, '_blank');
@@ -27,7 +25,6 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
 
   return (
     <div className="hidden lg:block w-[320px] sticky top-24 h-fit">
-      {/* Click to view public profile hint */}
       <div className="mb-2 text-center">
         <button
           onClick={handleClick}
@@ -38,24 +35,22 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
         </button>
       </div>
 
-      {/* Phone Preview - Now Clickable */}
       <button
         onClick={handleClick}
         className="relative border-[12px] border-[#0F172A] rounded-[3rem] aspect-[9/19] bg-white shadow-2xl overflow-hidden w-full hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
       >
-        {/* Hover overlay */}
         <div className="absolute inset-0 bg-[#6366F1]/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
 
-        {/* Phone Screen Content */}
         <div
           className="p-6 flex flex-col items-center h-full overflow-y-auto relative"
           style={{ backgroundColor }}
         >
-          {/* PREVIEW AVATAR */}
+          {/* Avatar */}
           <div className="w-20 h-20 bg-slate-200 rounded-full mb-4 shadow-inner overflow-hidden border border-slate-100">
-            {profile.avatar ? (
+
+            {profile.avatar_url ? (
               <img
-                src={profile.avatar}
+                src={profile.avatar_url}
                 alt="Preview"
                 className="w-full h-full object-cover"
               />
@@ -64,25 +59,37 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
                 className="w-full h-full flex items-center justify-center text-2xl font-bold"
                 style={{ color: textColor }}
               >
-                {profile.public_link.charAt(0).toUpperCase()}
+
+                {profile.public_link?.charAt(0).toUpperCase() ?? "U"}
               </div>
             )}
           </div>
 
-          <h3
-            className="font-bold mb-2"
-            style={{ color: textColor }}
-          >
+          {/* Public link */}
+          <h3 className="font-bold mb-1" style={{ color: textColor }}>
             @{profile.public_link}
           </h3>
 
-          <p
-            className="text-[11px] mb-8 text-center px-4"
-            style={{ color: textColor, opacity: 0.7 }}
-          >
-            {profile.bio}
-          </p>
+          {profile.display_name && (
+            <p
+              className="text-[12px] mb-1"
+              style={{ color: textColor, opacity: 0.8 }}
+            >
+              {profile.display_name}
+            </p>
+          )}
 
+          {/* Bio */}
+          {profile.bio && (
+            <p
+              className="text-[11px] mb-8 text-center px-4"
+              style={{ color: textColor, opacity: 0.7 }}
+            >
+              {profile.bio}
+            </p>
+          )}
+
+          {/* Links */}
           <div className="w-full space-y-3 overflow-y-auto flex-1">
             {links.length === 0 ? (
               <p
@@ -104,6 +111,7 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
             )}
           </div>
 
+          {/* Branding */}
           <div className="mt-auto pt-4 flex items-center gap-1 opacity-40">
             <Globe className="w-3 h-3" style={{ color: textColor }} />
             <span
