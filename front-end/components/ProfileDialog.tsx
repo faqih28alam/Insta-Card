@@ -37,29 +37,29 @@ export function ProfileDialog({
   onFileChange,
   onProfileChange,
 }: ProfileDialogProps) {
-  const [username, setUsername] = useState("");
+  const [publicLink, setPublicLink] = useState("");
   const [available, setAvailable] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!username) {
+      if (!publicLink) {
         setAvailable(false);
         return;
       }
 
-      if (username.length < 3) {
+      if (publicLink.length < 3) {
         setAvailable(false);
         return;
       }
 
-      if (username === profile.username) {
+      if (publicLink === profile.public_link) {
         setAvailable(true);
         return;
       }
 
-      const checkUsername = async () => {
+      const checkPublicLink = async () => {
         try {
-          const response = await publicFetch(`/api/v1/user/check/${username}`);
+          const response = await publicFetch(`/api/v1/profile/check/${publicLink}`);
           const data = await response.json();
           setAvailable(data.available);
         } catch {
@@ -67,11 +67,11 @@ export function ProfileDialog({
         }
       };
 
-      checkUsername();
+      checkPublicLink();
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username, profile.username]);
+  }, [publicLink, profile.public_link]);
 
   return (
     <Dialog>
@@ -121,10 +121,10 @@ export function ProfileDialog({
             </div>
             <div className="grid gap-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="public-link">Public Link</Label>
 
                 <div className="h-4">
-                  {username &&
+                  {publicLink &&
                     (available ? (
                       <span className="text-sm text-green-500">Available</span>
                     ) : (
@@ -134,11 +134,11 @@ export function ProfileDialog({
               </div>
 
               <Input
-                id="username"
-                value={profile.username}
+                id="public-link"
+                value={profile.public_link}
                 onChange={(e) => {
-                  onProfileChange({ ...profile, username: e.target.value });
-                  setUsername(e.target.value);
+                  onProfileChange({ ...profile, public_link: e.target.value });
+                  setPublicLink(e.target.value);
                 }}
               />
             </div>

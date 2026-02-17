@@ -25,7 +25,8 @@ export function SignUpForm({
 }: React.ComponentPropsWithoutRef<"div">) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const [publicLink, setPublicLink] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,29 +36,34 @@ export function SignUpForm({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (!username) {
+      if (!publicLink) {
         setAvailable(false);
         return;
       }
-      const checkUsername = async () => {
+
+      const checkPublicLink = async () => {
         try {
-          const response = await publicFetch(`/api/v1/user/check/${username}`);
+          const response = await publicFetch(
+            `/api/v1/profile/check/${publicLink}`,
+          );
           const data = await response.json();
           setAvailable(data.available);
         } catch {
           setAvailable(false);
         }
       };
-      checkUsername();
+      checkPublicLink();
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [username]);
+  }, [publicLink]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
+    console.log("data sign up", publicLink, displayName, email, password);
 
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -68,19 +74,22 @@ export function SignUpForm({
         },
       });
 
+      console.log("userId", data?.user?.id);
+
       if (error) throw error;
 
       if (data.user) {
-        await publicFetch("/api/v1/user/create", {
+        await publicFetch("/api/v1/profile/create", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            id: data.user.id,
-            username,
+            user_id: data.user.id,
+            public_link: publicLink,
+            display_name: displayName,
           }),
-        })
+        });
       }
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
@@ -106,10 +115,10 @@ export function SignUpForm({
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="public-link">Public Link</Label>
 
                   <div className="h-4">
-                    {username &&
+                    {publicLink &&
                       (available ? (
                         <span className="text-sm text-green-500">
                           Available
@@ -122,15 +131,37 @@ export function SignUpForm({
                   </div>
                 </div>
 
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 h-14 bg-muted rounded-l-lg border border-r-0 font-semibold text-gray-400 shadow-sm">
+                    linkhub.id/
+                  </span>
+                  <Input
+                    spellCheck={false}
+                    id="public-link"
+                    type="text"
+                    placeholder="Your public link"
+                    required
+                    value={publicLink}
+                    onChange={(e) => setPublicLink(e.target.value)}
+                    className="h-14 rounded-r-lg rounded-l-none !text-lg focus-visible:outline-none
+                    focus-visible:ring-0 focus-visible:ring-offset-0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="display-name">Display Name</Label>
+
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="username"
-                    type="username"
-                    placeholder="Your username"
+                    spellCheck={false}
+                    id="display-name"
+                    type="text"
+                    placeholder="Your display name"
                     required
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
                     className="h-14 pl-12 rounded-lg !text-lg focus-visible:outline-none
                     focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
@@ -143,6 +174,7 @@ export function SignUpForm({
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    spellCheck={false}
                     id="email"
                     type="email"
                     placeholder="name@example.com"

@@ -16,10 +16,12 @@ export default function DashboardPage() {
 
   // State
   const [profile, setProfile] = useState<Profile>({
-    username: " ",
+    public_link: " ",
+    display_name: " ",
     bio: " ",
     avatar: "",
   });
+  const [publicId, setPublicId] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newLink, setNewLink] = useState<Link>({
     id: "",
@@ -71,16 +73,16 @@ export default function DashboardPage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("username, display_name, bio, avatar_url")
-        .eq("id", user.id)
+        .select("id, public_link, display_name, bio, avatar_url")
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (!profile) {
         const meta = user.user_metadata || {};
 
         const newProfile = {
-          id: user.id,
-          username:
+          user_id: user.id,
+          public_link:
             meta.user_name ||
             meta.preferred_username ||
             meta.name ||
@@ -89,39 +91,40 @@ export default function DashboardPage() {
           display_name: meta.full_name || meta.name || "New User",
         };
 
-        const response = await apiFetch("/api/v1/user/oauth", {
+        const response = await apiFetch("/api/v1/profile/oauth", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newProfile),
         });
 
-        if (!response.ok) {
+        if (response.ok) {
+          const result = await response.json();
+          if (result.data) {
+            setProfile({
+              public_link: result.data.public_link,
+              display_name: result.data.display_name,
+              bio: "My bio is empty",
+              avatar: "",
+            });
+
+            setPublicId(result.data.id);
+          }
+        } else {
           const err = await response.json();
           console.error("OAuth profile create failed:", err);
           return;
         }
-
-        const username = newProfile.username
-          .toLowerCase()
-          .split(" ")
-          .slice(0, 2)
-          .join("");
-
-        setProfile({
-          username: username,
-          bio: "My bio is empty",
-          avatar: "",
-        });
-
-        return;
       }
 
       if (profile) {
         setProfile({
-          username: profile.username || "username",
+          public_link: profile.public_link || "username",
+          display_name: profile.display_name || "New User",
           bio: profile.bio || "My bio is empty",
           avatar: profile.avatar_url || "",
         });
+
+        setPublicId(profile.id);
       }
     };
 
@@ -169,14 +172,16 @@ export default function DashboardPage() {
 
     try {
       const formData = new FormData();
-      formData.append("username", profile.username);
+      formData.append("public_id", publicId);
+      formData.append("public_link", profile.public_link);
+      formData.append("display_name", profile.display_name);
       formData.append("bio", profile.bio);
 
       if (selectedFile) {
         formData.append("avatar", selectedFile);
       }
 
-      const response = await apiFetch("/api/v1/user/update", {
+      const response = await apiFetch("/api/v1/profile/update", {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,

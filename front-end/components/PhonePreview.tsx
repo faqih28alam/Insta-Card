@@ -21,7 +21,7 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
 
   // Function to open public profile
   const handleClick = () => {
-    const url = `${window.location.origin}/${profile.username}`;
+    const url = `${window.location.origin}/${profile.public_link}`;
     window.open(url, '_blank');
   };
 
@@ -64,7 +64,7 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
                 className="w-full h-full flex items-center justify-center text-2xl font-bold"
                 style={{ color: textColor }}
               >
-                {profile.username.charAt(0).toUpperCase()}
+                {profile.public_link.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
@@ -73,7 +73,7 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
             className="font-bold mb-2"
             style={{ color: textColor }}
           >
-            @{profile.username}
+            @{profile.public_link}
           </h3>
 
           <p

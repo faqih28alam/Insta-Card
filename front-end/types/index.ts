@@ -6,7 +6,8 @@ export interface Link {
 }
 
 export interface Profile {
-    username: string;
+    public_link: string;
+    display_name: string;
     bio: string;
     avatar: string;
     // Optional theme colors for appearance preview

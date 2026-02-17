@@ -40,7 +40,7 @@ export function DashboardHeader({
 
   // Construct the public URL
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  const shareUrl = `${baseUrl}/${profile.username || ''}`;
+  const shareUrl = `${baseUrl}/${profile.public_link || ''}`;
 
   return (
     <nav className="border-b bg-white px-6 py-3 flex justify-between items-center sticky top-0 z-10">
