@@ -7,6 +7,7 @@ import {
   createProfile,
   deleteUser,
   getProfile,
+  layout,
   oAuthProfile,
   theme,
   updateProfile,
@@ -16,6 +17,7 @@ import {
   themeSchema,
   updateSchema,
   profileSchema,
+  layoutSchema,
 } from "../validators/profile";
 import upload from "../lib/multer";
 
@@ -36,5 +38,6 @@ router.patch(
 );
 
 router.patch("/theme", protect, validate(themeSchema), asyncHandler(theme));
+router.post("/layout", protect, validate(layoutSchema), asyncHandler(layout));
 
 export default router;

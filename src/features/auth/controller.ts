@@ -42,6 +42,24 @@ export const register = async (
 
   if (userError) throw new AppError(400, userError.message);
 
+  const component = [
+    { name: "avatar", index: 0 },
+    { name: "public_link", index: 1 },
+    { name: "display_name", index: 2 },
+    { name: "bio", index: 3 },
+    { name: "links", index: 4 },
+  ];
+
+  const { error: layoutError } = await supabase.from("layout").insert(
+    component.map((item) => ({
+      public_id: data.id,
+      components: item.name,
+      order_index: item.index,
+    })),
+  );
+
+  if (layoutError) throw new AppError(400, layoutError.message);
+
   res.status(201).json({
     status: "success",
     message: "Successfully registered",

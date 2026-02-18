@@ -85,6 +85,29 @@ export const profileSwagger = {
     },
   },
 
+  "/profile/layout": {
+    post: {
+      tags: ["Profile"],
+      summary: "Update profile layout",
+      security: [{ bearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              $ref: "#/components/schemas/LayoutRequest",
+            },
+          },
+        },
+      },
+      responses: {
+        200: { description: "OK" },
+        400: { description: "Bad request" },
+        401: { description: "Unauthorized" },
+      },
+    },
+  },
+
   "/profile/update": {
     patch: {
       tags: ["Profile"],

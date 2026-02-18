@@ -2,7 +2,6 @@ import { Router } from "express";
 import { protect } from "../middlewares/protect";
 import { asyncHandler } from "../middlewares/async";
 import {
-  // allLink,
   createLink,
   deleteLink,
   linkClicks,
@@ -14,7 +13,6 @@ import { linkSchema, orderSchema } from "../validators/link";
 
 const router = Router();
 
-// router.get("/links", protect, asyncHandler(allLink));
 router.post("/links/:id/click", asyncHandler(linkClicks));
 router.post("/links", protect, validate(linkSchema), asyncHandler(createLink));
 

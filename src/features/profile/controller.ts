@@ -50,10 +50,28 @@ export const createProfile = async (
       public_link: formPublicLink,
       display_name,
     })
-    .select("public_link")
+    .select("id")
     .single();
 
   if (error) throw new AppError(400, error.message);
+
+  const component = [
+    { name: "avatar", index: 0 },
+    { name: "public_link", index: 1 },
+    { name: "display_name", index: 2 },
+    { name: "bio", index: 3 },
+    { name: "links", index: 4 },
+  ];
+
+  const { error: layoutError } = await supabase.from("layout").insert(
+    component.map((item) => ({
+      public_id: data.id,
+      components: item.name,
+      order_index: item.index,
+    })),
+  );
+
+  if (layoutError) throw new AppError(400, layoutError.message);
 
   res.status(200).json({
     status: "success",
@@ -87,6 +105,24 @@ export const oAuthProfile = async (
     .single();
 
   if (error) throw new AppError(500, error.message);
+
+  const component = [
+    { name: "avatar", index: 0 },
+    { name: "public_link", index: 1 },
+    { name: "display_name", index: 2 },
+    { name: "bio", index: 3 },
+    { name: "links", index: 4 },
+  ];
+
+  const { error: layoutError } = await supabase.from("layout").insert(
+    component.map((item) => ({
+      public_id: data.id,
+      components: item.name,
+      order_index: item.index,
+    })),
+  );
+
+  if (layoutError) throw new AppError(400, layoutError.message);
 
   res.status(200).json({
     status: "success",
@@ -207,9 +243,11 @@ export const theme = async (
     .from("profiles")
     .update({
       theme_id: theme.theme_id,
+
       background_color: theme.background_color,
       text_color: theme.text_color,
       button_color: theme.button_color,
+
       avatar_radius: theme.avatar_radius,
       button_radius: theme.button_radius,
     })
@@ -222,6 +260,28 @@ export const theme = async (
   res.status(200).json({
     status: "success",
     message: "Successfully updated theme",
+    data,
+  });
+};
+
+// Reorder layout
+export const layout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { public_id, components } = req.body;
+
+  const { data, error } = await supabase.rpc("reorder_components", {
+    p_public_id: public_id,
+    p_components: components,
+  });
+
+  if (error) return next(new AppError(400, error.message));
+
+  res.status(200).json({
+    status: "success",
+    message: "Components reordered successfully",
     data,
   });
 };

@@ -1,4 +1,5 @@
 import Joi from "joi";
+import { reorderSchema } from "./link";
 
 const idField = Joi.string().required();
 const publicLinkField = Joi.string().min(3).max(100).optional();
@@ -27,7 +28,16 @@ export const oAuthSchema = Joi.object({
 export const themeSchema = Joi.object({
   public_id: idField,
   theme_id: idField,
+
   background_color: Joi.string().optional(),
   text_color: Joi.string().optional(),
   button_color: Joi.string().optional(),
+
+  avatar_radius: Joi.number().optional(),
+  button_radius: Joi.number().optional(),
+});
+
+export const layoutSchema = Joi.object({
+  public_id: idField,
+  components: Joi.array().items(reorderSchema).required(),
 });

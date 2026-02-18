@@ -6,6 +6,7 @@ import {
   profileSchema,
   oAuthSchema,
   themeSchema,
+  layoutSchema,
 } from "../validators/profile";
 import { linkSchema, orderSchema } from "../validators/link";
 
@@ -21,6 +22,7 @@ const { swagger: orderSwagger } = j2s(orderSchema);
 const { swagger: createProfileSwagger } = j2s(profileSchema);
 const { swagger: oAuthSwagger } = j2s(oAuthSchema);
 const { swagger: themeSwagger } = j2s(themeSchema);
+const { swagger: layoutSwagger } = j2s(layoutSchema);
 
 const options: Options = {
   definition: {
@@ -52,6 +54,7 @@ const options: Options = {
         ProfileRequest: createProfileSwagger,
         OAuthRequest: oAuthSwagger,
         ThemeRequest: themeSwagger,
+        LayoutRequest: layoutSwagger,
       },
     },
     paths: {
