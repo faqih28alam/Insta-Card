@@ -47,24 +47,6 @@ export interface LayoutBlock {
     align: AlignType;
 }
 
-// ✅ Map string IDs to numeric component IDs for backend
-export const COMPONENT_ID_MAP: Record<BlockType, number> = {
-    avatar: 1,
-    display_name: 2,
-    public_link: 3,
-    bio: 4,
-    links: 5,
-};
-
-// ✅ Reverse map for loading from backend
-export const ID_TO_BLOCK_MAP: Record<number, BlockType> = {
-    1: "avatar",
-    2: "display_name",
-    3: "public_link",
-    4: "bio",
-    5: "links",
-};
-
 export const DEFAULT_LAYOUT_BLOCKS: LayoutBlock[] = [
     { id: "avatar", label: "Avatar", visible: true, align: "center" },
     { id: "display_name", label: "Display Name", visible: true, align: "center" },
@@ -125,8 +107,8 @@ function SortableRow({ block, index, isGhost, onToggleVisible, onCycleAlign }: R
             ref={setNodeRef}
             style={style}
             className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 border transition-all duration-150 ${block.visible
-                    ? "bg-white border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300"
-                    : "bg-slate-50/70 border-dashed border-slate-200 opacity-60"
+                ? "bg-white border-slate-200/80 shadow-sm hover:shadow-md hover:border-slate-300"
+                : "bg-slate-50/70 border-dashed border-slate-200 opacity-60"
                 } ${isSorting ? "shadow-lg scale-[1.01]" : ""}`}
         >
             <span className="w-5 text-[11px] font-semibold text-slate-300 text-center select-none tabular-nums">

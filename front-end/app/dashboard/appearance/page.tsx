@@ -6,11 +6,14 @@ import { createClient } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api";
 import { DashboardHeader } from "@/components/DashboardHeader";
 import { PhonePreview } from "@/components/PhonePreview";
-import { LayoutCustomizer, LayoutBlock, DEFAULT_LAYOUT_BLOCKS, COMPONENT_ID_MAP, ID_TO_BLOCK_MAP } from "@/components/LayoutCustomizer";
+import { LayoutCustomizer, LayoutBlock, BlockType, DEFAULT_LAYOUT_BLOCKS } from "@/components/LayoutCustomizer";
 import { Check, LayoutTemplate, RotateCcw, Save } from "lucide-react";
 import { Profile, Link } from "@/types";
 import { useRouter } from "next/navigation";
-import { Wheel } from "@uiw/react-color";
+
+// At the top of page.tsx
+import dynamic from "next/dynamic";
+const Wheel = dynamic(() => import("@uiw/react-color").then(m => m.Wheel), { ssr: false });
 
 interface Theme {
   id: string;
@@ -49,6 +52,7 @@ export default function AppearancePage() {
 
   const [layoutBlocks, setLayoutBlocks] = useState<LayoutBlock[]>(DEFAULT_LAYOUT_BLOCKS);
   const [isSavingLayout, setIsSavingLayout] = useState(false);
+  const [layoutRowIds, setLayoutRowIds] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -97,32 +101,24 @@ export default function AppearancePage() {
         // Fetch layout from database
         const { data: layoutData } = await supabase
           .from("layout")
-          .select("components")
+          .select("id, order_index, components")
           .eq("public_id", profileData.id)
-          .maybeSingle();
+          .order("order_index", { ascending: true });
 
-        if (layoutData && layoutData.components) {
-          try {
-            // Parse JSON components string
-            const savedComponents = JSON.parse(layoutData.components);
+        if (layoutData && layoutData.length > 0) {
+          // Store row IDs keyed by component name
+          const rowIds: Record<string, number> = {};
+          layoutData.forEach((c: any) => { rowIds[c.components] = c.id; });
+          setLayoutRowIds(rowIds);
 
-            // Transform to LayoutBlock format
-            const loadedBlocks = savedComponents
-              .sort((a: any, b: any) => a.order_index - b.order_index)
-              .map((c: any) => {
-                const blockId = ID_TO_BLOCK_MAP[c.id];
-                const defaultBlock = DEFAULT_LAYOUT_BLOCKS.find(b => b.id === blockId);
-                return defaultBlock;
-              })
-              .filter(Boolean); // Remove any undefined blocks
+          const loadedBlocks = layoutData
+            .map((c: any) => {
+              const blockId = c.components as BlockType;
+              return DEFAULT_LAYOUT_BLOCKS.find(b => b.id === blockId) ?? null;
+            })
+            .filter((b: LayoutBlock | null): b is LayoutBlock => b !== null);
 
-            if (loadedBlocks.length > 0) {
-              setLayoutBlocks(loadedBlocks as LayoutBlock[]);
-            }
-          } catch (error) {
-            console.error("Failed to parse layout:", error);
-            // Fall back to default on parse error
-          }
+          if (loadedBlocks.length > 0) setLayoutBlocks(loadedBlocks);
         }
 
       }
@@ -196,13 +192,12 @@ export default function AppearancePage() {
     finally { setTimeout(() => setIsSaving(false), 500); }
   };
 
-  // Save layout to backend
   const handleSaveLayout = async () => {
     setIsSavingLayout(true);
     try {
-      // Transform blocks to backend format: { id: number, order_index: number }
+      // Send component name (text) + order_index — matching the DB schema
       const components = layoutBlocks.map((block, index) => ({
-        id: COMPONENT_ID_MAP[block.id],
+        id: layoutRowIds[block.id],
         order_index: index,
       }));
 
