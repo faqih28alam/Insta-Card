@@ -1,7 +1,10 @@
 // components/PhonePreview.tsx
-import React from 'react';
-import { Globe, ExternalLink } from 'lucide-react';
-import { Link, Profile } from '@/types';
+"use client";
+
+import React from "react";
+import { Globe, ExternalLink } from "lucide-react";
+import { Link, Profile } from "@/types";
+import { LayoutBlock, DEFAULT_LAYOUT_BLOCKS } from "@/components/LayoutCustomizer";
 
 interface PhonePreviewProps {
   profile: Profile;
@@ -11,98 +14,85 @@ interface PhonePreviewProps {
     text_color?: string;
     button_color?: string;
   };
+  layout?: LayoutBlock[];
 }
 
-export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
-  const backgroundColor = theme?.background_color || '#F8FAFC';
-  const textColor = theme?.text_color || '#0F172A';
-  const buttonColor = theme?.button_color || '#6366F1';
+const alignClass: Record<string, string> = {
+  left: "items-start text-left",
+  center: "items-center text-center",
+  right: "items-end text-right",
+};
+
+export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BLOCKS }: PhonePreviewProps) {
+  const backgroundColor = theme?.background_color || "#F8FAFC";
+  const textColor = theme?.text_color || "#0F172A";
+  const buttonColor = theme?.button_color || "#6366F1";
 
   const handleClick = () => {
     const url = `${window.location.origin}/${profile.public_link}`;
-    window.open(url, '_blank');
+    window.open(url, "_blank");
   };
 
-  return (
-    <div className="hidden lg:block w-[320px] sticky top-24 h-fit">
-      <div className="mb-2 text-center">
-        <button
-          onClick={handleClick}
-          className="text-xs text-slate-500 hover:text-[#6366F1] transition-colors flex items-center gap-1 mx-auto group"
-        >
-          <ExternalLink className="w-3 h-3" />
-          <span>Click preview to view public page</span>
-        </button>
-      </div>
+  // Render each block according to layout order + visibility
+  const renderBlock = (block: LayoutBlock) => {
+    if (!block.visible) return null;
+    const align = alignClass[block.align] ?? alignClass.center;
 
-      <button
-        onClick={handleClick}
-        className="relative border-[12px] border-[#0F172A] rounded-[3rem] aspect-[9/19] bg-white shadow-2xl overflow-hidden w-full hover:shadow-2xl hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
-      >
-        <div className="absolute inset-0 bg-[#6366F1]/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
-
-        <div
-          className="p-6 flex flex-col items-center h-full overflow-y-auto relative"
-          style={{ backgroundColor }}
-        >
-          {/* Avatar */}
-          <div className="w-20 h-20 bg-slate-200 rounded-full mb-4 shadow-inner overflow-hidden border border-slate-100">
-
-            {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-2xl font-bold"
-                style={{ color: textColor }}
-              >
-
-                {profile.public_link?.charAt(0).toUpperCase() ?? "U"}
-              </div>
-            )}
+    switch (block.id) {
+      case "avatar":
+        return (
+          <div key="avatar" className="flex justify-center w-full mb-3">
+            <div className="w-16 h-16 bg-slate-200 rounded-full shadow-inner overflow-hidden border-2 border-white/60 flex-shrink-0">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xl font-bold" style={{ color: textColor }}>
+                  {profile.public_link?.charAt(0).toUpperCase() ?? "U"}
+                </div>
+              )}
+            </div>
           </div>
+        );
 
-          {/* Public link */}
-          <h3 className="font-bold mb-1" style={{ color: textColor }}>
-            @{profile.public_link}
-          </h3>
-
-          {profile.display_name && (
-            <p
-              className="text-[12px] mb-1"
-              style={{ color: textColor, opacity: 0.8 }}
-            >
+      case "display_name":
+        return profile.display_name ? (
+          <div key="display_name" className={`flex flex-col w-full mb-0.5 ${align}`}>
+            <span className="text-[13px] font-bold" style={{ color: textColor }}>
               {profile.display_name}
-            </p>
-          )}
+            </span>
+          </div>
+        ) : null;
 
-          {/* Bio */}
-          {profile.bio && (
-            <p
-              className="text-[11px] mb-8 text-center px-4"
-              style={{ color: textColor, opacity: 0.7 }}
-            >
+      case "public_link":
+        return (
+          <div key="public_link" className={`flex flex-col w-full mb-2 ${align}`}>
+            <span className="text-[11px] font-semibold" style={{ color: textColor, opacity: 0.6 }}>
+              @{profile.public_link}
+            </span>
+          </div>
+        );
+
+      case "bio":
+        return profile.bio ? (
+          <div key="bio" className={`flex flex-col w-full mb-4 px-2 ${align}`}>
+            <span className="text-[10px] leading-relaxed" style={{ color: textColor, opacity: 0.65 }}>
               {profile.bio}
-            </p>
-          )}
+            </span>
+          </div>
+        ) : null;
 
-          {/* Links */}
-          <div className="w-full space-y-3 overflow-y-auto flex-1">
+      case "links":
+        return (
+          <div key="links" className="w-full space-y-2 mb-4">
             {links.length === 0 ? (
-              <p
-                className="text-[11px] text-center py-4"
-                style={{ color: textColor, opacity: 0.4 }}
-              >
+              <p className="text-[10px] text-center py-3" style={{ color: textColor, opacity: 0.35 }}>
                 No links yet
               </p>
             ) : (
               links.map((link) => (
                 <div
                   key={link.id}
-                  className="w-full py-3 px-4 rounded-full text-white text-[13px] font-medium text-center shadow-sm"
+                  className="w-full py-2.5 px-4 rounded-full text-white text-[11px] font-semibold text-center shadow-sm"
                   style={{ backgroundColor: buttonColor }}
                 >
                   {link.title}
@@ -110,14 +100,49 @@ export function PhonePreview({ profile, links, theme }: PhonePreviewProps) {
               ))
             )}
           </div>
+        );
 
-          {/* Branding */}
-          <div className="mt-auto pt-4 flex items-center gap-1 opacity-40">
-            <Globe className="w-3 h-3" style={{ color: textColor }} />
-            <span
-              className="text-[10px] font-bold tracking-widest uppercase"
-              style={{ color: textColor }}
-            >
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="hidden lg:block w-[300px] sticky top-24 h-fit">
+      {/* Hint */}
+      <div className="mb-2 text-center">
+        <button
+          onClick={handleClick}
+          className="text-xs text-slate-400 hover:text-[#6366F1] transition-colors flex items-center gap-1.5 mx-auto"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Click preview to view public page
+        </button>
+      </div>
+
+      {/* Phone shell */}
+      <button
+        onClick={handleClick}
+        className="relative border-[10px] border-[#0F172A] rounded-[2.8rem] aspect-[9/19] bg-white shadow-2xl overflow-hidden w-full hover:scale-[1.015] transition-all duration-200 cursor-pointer group"
+      >
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-[#6366F1]/5 opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none" />
+
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-4 bg-[#0F172A] rounded-b-2xl z-20" />
+
+        {/* Screen */}
+        <div
+          className="h-full pt-6 pb-4 px-4 flex flex-col items-center overflow-y-auto"
+          style={{ backgroundColor }}
+        >
+          {/* Render blocks in order */}
+          {layout.map((block) => renderBlock(block))}
+
+          {/* Branding always at bottom */}
+          <div className="mt-auto pt-2 flex items-center gap-1 opacity-30">
+            <Globe className="w-2.5 h-2.5" style={{ color: textColor }} />
+            <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: textColor }}>
               LinkHub
             </span>
           </div>
