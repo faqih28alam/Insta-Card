@@ -1,3 +1,5 @@
+// components/UserClient.tsx
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,16 +23,24 @@ interface Profile {
   background_color?: string;
   text_color?: string;
   button_color?: string;
+  avatar_radius?: number;
+  button_radius?: number;
+}
+
+interface LayoutComponent {
+  id?: number;
+  components: string;
+  order_index: number;
 }
 
 interface ProfileData {
   profile: Profile;
   links: Link[];
+  layout?: LayoutComponent[];
 }
 
-export default function PublicProfilePage() {
+export default function UserClient() {
   const params = useParams();
-  // ✅ FIX 2: param name matches your folder [public_link], not [username]
   const public_link = params.public_link as string;
 
   const [data, setData] = useState<ProfileData | null>(null);
@@ -95,119 +105,109 @@ export default function PublicProfilePage() {
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-slate-800 mb-4">404</h1>
-          <p className="text-xl text-slate-600 mb-8">
-            {error || "User not found"}
-          </p>
-          <a href="/" className="text-[#6366F1] hover:underline">
-            Go to homepage
-          </a>
+          <p className="text-xl text-slate-600 mb-8">{error || "User not found"}</p>
+          <a href="/" className="text-[#6366F1] hover:underline">Go to homepage</a>
         </div>
       </div>
     );
   }
 
-  const { profile, links } = data;
+  const { profile, links, layout } = data;
   const backgroundColor = profile.background_color || "#F8FAFC";
   const textColor = profile.text_color || "#0F172A";
   const buttonColor = profile.button_color || "#6366F1";
-
-  // ✅ FIX 4: Use public_link not username for QR URL
+  const avatarRadius = profile.avatar_radius ? `${profile.avatar_radius}px` : "9999px";
+  const buttonRadius = profile.button_radius ? `${profile.button_radius}px` : "9999px";
   const qrLink = `${window.location.origin}/${profile.public_link}`;
 
-  return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 py-12"
-      style={{ backgroundColor }}
-    >
-      <div className="w-full h-screen max-w-[680px]">
-        <div className="w-full flex justify-end">
-          <button
-            onClick={() => setOpen(true)}
-            style={{ color: textColor }}
-            title="Scan QR Code"
-          >
-            <ScanQrCode />
-          </button>
-        </div>
+  // Default layout order if not provided by backend
+  const defaultOrder = ["avatar", "public_link", "display_name", "bio", "links"];
+  const componentOrder = layout && layout.length > 0
+    ? layout.sort((a, b) => a.order_index - b.order_index).map(c => c.components)
+    : defaultOrder;
 
-        {/* Profile Header */}
-        <div className="flex flex-col items-center mb-8">
-          {/* Avatar */}
-          <div className="w-24 h-24 rounded-full bg-slate-200 mb-4 shadow-lg overflow-hidden border-4 border-white">
+  // Render each component based on layout order
+  const renderComponent = (componentName: string) => {
+    switch (componentName) {
+      case "avatar":
+        return (
+          <div key="avatar" className="w-24 h-24 bg-slate-200 mb-4 shadow-lg overflow-hidden border-4 border-white"
+            style={{ borderRadius: avatarRadius }}>
             {profile.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={profile.public_link}
-                className="w-full h-full object-cover"
-              />
+              <img src={profile.avatar_url} alt={profile.public_link} className="w-full h-full object-cover" />
             ) : (
-              <div
-                className="w-full h-full flex items-center justify-center text-2xl font-bold"
-                style={{ color: textColor }}
-              >
-                {/* ✅ FIX 5: Use public_link not username for avatar fallback */}
+              <div className="w-full h-full flex items-center justify-center text-2xl font-bold" style={{ color: textColor }}>
                 {profile.public_link.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
+        );
 
-          {/* Public Link */}
-          <h1 className="text-2xl font-bold mb-2" style={{ color: textColor }}>
+      case "public_link":
+        return (
+          <h1 key="public_link" className="text-2xl font-bold mb-2" style={{ color: textColor }}>
             @{profile.public_link}
           </h1>
+        );
 
-          {/* ✅ FIX 6: Show display_name if it exists (separate from public_link) */}
-          {profile.display_name && (
-            <p
-              className="text-lg mb-2"
-              style={{ color: textColor, opacity: 0.8 }}
-            >
-              {profile.display_name}
-            </p>
-          )}
+      case "display_name":
+        return profile.display_name ? (
+          <p key="display_name" className="text-lg mb-2" style={{ color: textColor, opacity: 0.8 }}>
+            {profile.display_name}
+          </p>
+        ) : null;
 
-          {/* Bio */}
-          {profile.bio && (
-            <p
-              className="text-center max-w-md px-4"
-              style={{ color: textColor, opacity: 0.7 }}
-            >
-              {profile.bio}
-            </p>
-          )}
+      case "bio":
+        return profile.bio ? (
+          <p key="bio" className="text-center max-w-md px-4 mb-8" style={{ color: textColor, opacity: 0.7 }}>
+            {profile.bio}
+          </p>
+        ) : null;
+
+      case "links":
+        return (
+          <div key="links" className="space-y-4 mb-12 w-full">
+            {links.length === 0 ? (
+              <p className="text-center py-8" style={{ color: textColor, opacity: 0.5 }}>No links yet</p>
+            ) : (
+              links.map((link) => (
+                <button
+                  key={link.id}
+                  onClick={() => handleLinkClick(link.id, link.url)}
+                  className="w-full py-4 px-6 font-medium text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                  style={{ backgroundColor: buttonColor, borderRadius: buttonRadius }}
+                >
+                  {link.title}
+                </button>
+              ))
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{ backgroundColor }}>
+      <div className="w-full max-w-[680px]">
+        <div className="w-full flex justify-end mb-4">
+          <button onClick={() => setOpen(true)} style={{ color: textColor }} title="Scan QR Code">
+            <ScanQrCode />
+          </button>
         </div>
 
-        {/* Links */}
-        <div className="space-y-4 mb-12">
-          {links.length === 0 ? (
-            <p
-              className="text-center py-8"
-              style={{ color: textColor, opacity: 0.5 }}
-            >
-              No links yet
-            </p>
-          ) : (
-            links.map((link) => (
-              <button
-                key={link.id}
-                onClick={() => handleLinkClick(link.id, link.url)}
-                className="w-full py-4 px-6 rounded-full font-medium text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
-                style={{ backgroundColor: buttonColor }}
-              >
-                {link.title}
-              </button>
-            ))
-          )}
+        {/* Render components in custom layout order */}
+        <div className="flex flex-col items-center">
+          {componentOrder.map((componentName) => renderComponent(componentName))}
         </div>
 
-        {/* LinkHub Branding */}
-        <div className="flex items-center justify-center gap-2 opacity-40">
+        {/* Branding */}
+        <div className="flex items-center justify-center gap-2 opacity-40 mt-8">
           <Globe className="w-4 h-4" style={{ color: textColor }} />
-          <span
-            className="text-sm font-bold tracking-widest uppercase"
-            style={{ color: textColor }}
-          >
-            LinkHub
+          <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>
+            LINKHUB
           </span>
         </div>
       </div>

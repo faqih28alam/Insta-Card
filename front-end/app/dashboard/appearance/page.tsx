@@ -1,4 +1,5 @@
 // app/dashboard/appearance/page.tsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -369,15 +370,13 @@ export default function AppearancePage() {
                   key={theme.id}
                   onClick={() => handleThemeSelect(theme.id)}
                   disabled={isSaving}
-                  className={`relative p-5 rounded-2xl border-2 transition-all text-left ${
-                    selectedTheme === theme.id
+                  className={`relative p-5 rounded-2xl border-2 transition-all text-left ${selectedTheme === theme.id
                       ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
                       : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
-                  } ${
-                    isSaving
+                    } ${isSaving
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"
-                  }`}
+                    }`}
                 >
                   {selectedTheme === theme.id && (
                     <div className="absolute top-3 right-3 w-5 h-5 bg-[#6366F1] rounded-full flex items-center justify-center">
