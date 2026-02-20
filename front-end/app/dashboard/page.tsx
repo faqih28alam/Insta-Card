@@ -179,6 +179,7 @@ export default function DashboardPage() {
 
     try {
       const formData = new FormData();
+      formData.append("public_id", publicId);
       formData.append("public_link", profile.public_link);
       formData.append("display_name", profile.display_name || "");
       formData.append("bio", profile.bio || "");

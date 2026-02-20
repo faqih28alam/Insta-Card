@@ -4,7 +4,10 @@
 import React from "react";
 import { Globe, ExternalLink } from "lucide-react";
 import { Link, Profile } from "@/types";
-import { LayoutBlock, DEFAULT_LAYOUT_BLOCKS } from "@/components/LayoutCustomizer";
+import {
+  LayoutBlock,
+  DEFAULT_LAYOUT_BLOCKS,
+} from "@/components/LayoutCustomizer";
 
 interface PhonePreviewProps {
   profile: Profile;
@@ -13,6 +16,8 @@ interface PhonePreviewProps {
     background_color?: string;
     text_color?: string;
     button_color?: string;
+    avatar?: number;
+    button?: number;
   };
   layout?: LayoutBlock[];
 }
@@ -23,10 +28,17 @@ const alignClass: Record<string, string> = {
   right: "items-end text-right",
 };
 
-export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BLOCKS }: PhonePreviewProps) {
+export function PhonePreview({
+  profile,
+  links,
+  theme,
+  layout = DEFAULT_LAYOUT_BLOCKS,
+}: PhonePreviewProps) {
   const backgroundColor = theme?.background_color || "#F8FAFC";
   const textColor = theme?.text_color || "#0F172A";
   const buttonColor = theme?.button_color || "#6366F1";
+  const avatarRadius = theme?.avatar;
+  const buttonRadius = theme?.button;
 
   const handleClick = () => {
     const url = `${window.location.origin}/${profile.public_link}`;
@@ -42,11 +54,21 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
       case "avatar":
         return (
           <div key="avatar" className="flex justify-center w-full mb-3">
-            <div className="w-16 h-16 bg-slate-200 rounded-full shadow-inner overflow-hidden border-2 border-white/60 flex-shrink-0">
+            <div
+              className="w-16 h-16 bg-slate-200 shadow-inner overflow-hidden border-2 border-white/60 flex-shrink-0"
+              style={{ borderRadius: avatarRadius }}
+            >
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+                <img
+                  src={profile.avatar_url}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-xl font-bold" style={{ color: textColor }}>
+                <div
+                  className="w-full h-full flex items-center justify-center text-xl font-bold"
+                  style={{ color: textColor, borderRadius: avatarRadius }}
+                >
                   {profile.public_link?.charAt(0).toUpperCase() ?? "U"}
                 </div>
               )}
@@ -56,8 +78,14 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
 
       case "display_name":
         return profile.display_name ? (
-          <div key="display_name" className={`flex flex-col w-full mb-0.5 ${align}`}>
-            <span className="text-[13px] font-bold" style={{ color: textColor }}>
+          <div
+            key="display_name"
+            className={`flex flex-col w-full mb-0.5 ${align}`}
+          >
+            <span
+              className="text-[13px] font-bold"
+              style={{ color: textColor }}
+            >
               {profile.display_name}
             </span>
           </div>
@@ -65,8 +93,14 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
 
       case "public_link":
         return (
-          <div key="public_link" className={`flex flex-col w-full mb-2 ${align}`}>
-            <span className="text-[11px] font-semibold" style={{ color: textColor, opacity: 0.6 }}>
+          <div
+            key="public_link"
+            className={`flex flex-col w-full mb-2 ${align}`}
+          >
+            <span
+              className="text-[11px] font-semibold"
+              style={{ color: textColor, opacity: 0.6 }}
+            >
               @{profile.public_link}
             </span>
           </div>
@@ -75,7 +109,10 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
       case "bio":
         return profile.bio ? (
           <div key="bio" className={`flex flex-col w-full mb-4 px-2 ${align}`}>
-            <span className="text-[10px] leading-relaxed" style={{ color: textColor, opacity: 0.65 }}>
+            <span
+              className="text-[10px] leading-relaxed"
+              style={{ color: textColor, opacity: 0.65 }}
+            >
               {profile.bio}
             </span>
           </div>
@@ -85,15 +122,21 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
         return (
           <div key="links" className="w-full space-y-2 mb-4">
             {links.length === 0 ? (
-              <p className="text-[10px] text-center py-3" style={{ color: textColor, opacity: 0.35 }}>
+              <p
+                className="text-[10px] text-center py-3"
+                style={{ color: textColor, opacity: 0.35 }}
+              >
                 No links yet
               </p>
             ) : (
               links.map((link) => (
                 <div
                   key={link.id}
-                  className="w-full py-2.5 px-4 rounded-full text-white text-[11px] font-semibold text-center shadow-sm"
-                  style={{ backgroundColor: buttonColor }}
+                  className="w-full py-2.5 px-4 text-white text-[11px] font-semibold text-center shadow-sm"
+                  style={{
+                    backgroundColor: buttonColor,
+                    borderRadius: buttonRadius,
+                  }}
                 >
                   {link.title}
                 </div>
@@ -142,7 +185,10 @@ export function PhonePreview({ profile, links, theme, layout = DEFAULT_LAYOUT_BL
           {/* Branding always at bottom */}
           <div className="mt-auto pt-2 flex items-center gap-1 opacity-30">
             <Globe className="w-2.5 h-2.5" style={{ color: textColor }} />
-            <span className="text-[9px] font-bold tracking-widest uppercase" style={{ color: textColor }}>
+            <span
+              className="text-[9px] font-bold tracking-widest uppercase"
+              style={{ color: textColor }}
+            >
               LinkHub
             </span>
           </div>
