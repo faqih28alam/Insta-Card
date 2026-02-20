@@ -155,9 +155,18 @@ export const getProfile = async (
 
   if (linksError) throw new AppError(500, linksError.message);
 
+  const {data: layout, error: layoutError} = await supabase
+    .from("layout")
+    .select("id, components, order_index")
+    .eq("public_id", profile.id)
+    .order("order_index", { ascending: true });
+
+  if (layoutError) throw new AppError(500, layoutError.message);
+
   const data = {
     profile,
     links,
+    layout
   };
 
   res.status(200).json({
