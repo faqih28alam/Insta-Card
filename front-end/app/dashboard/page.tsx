@@ -9,9 +9,23 @@ import { LinkEditor } from "@/components/LinkEditor";
 import { PhonePreview } from "@/components/PhonePreview";
 import { Link, Profile } from "@/types";
 import { useRouter } from "next/navigation";
+import {
+  LayoutBlock,
+  BlockType,
+  DEFAULT_LAYOUT_BLOCKS,
+} from "@/components/LayoutCustomizer";
 
 // ✅ Created once outside component — stable reference, won't trigger useEffect re-runs
 const supabase = createClient();
+
+type Theme = {
+  id: string;
+  background_color: string;
+  text_color: string;
+  button_color: string;
+  avatar?: number;
+  button?: number;
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,11 +37,22 @@ export default function DashboardPage() {
     avatar_url: "",
   });
   const [publicId, setPublicId] = useState("");
+  const [theme, setTheme] = useState<Theme>({
+    id: "default",
+    background_color: "",
+    text_color: "",
+    button_color: "",
+    avatar: 1,
+    button: 1,
+  });
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newLink, setNewLink] = useState<Link>({ id: "", title: "", url: "" });
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [layoutBlocks, setLayoutBlocks] = useState<LayoutBlock[]>(
+    DEFAULT_LAYOUT_BLOCKS
+  );
   const [token, setToken] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null!);
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
@@ -80,7 +105,10 @@ export default function DashboardPage() {
   // Fetch user data on mount
   useEffect(() => {
     const getUserData = async () => {
-      const { data: { user }, error } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
       if (error || !user) {
         console.error("Error fetching user:", error?.message);
@@ -89,7 +117,9 @@ export default function DashboardPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, public_link, display_name, bio, avatar_url")
+        .select(
+          "id, public_link, display_name, bio, avatar_url, theme_id, background_color, text_color, button_color, avatar_radius, button_radius"
+        )
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -138,6 +168,14 @@ export default function DashboardPage() {
         bio: profileData.bio || "",
         avatar_url: profileData.avatar_url || "",
       });
+      setTheme({
+        id: profileData.theme_id || "default",
+        background_color: profileData.background_color || "#F8FAFC",
+        text_color: profileData.text_color || "#0F172A",
+        button_color: profileData.button_color || "#6366F1",
+        avatar: profileData.avatar_radius || 1,
+        button: profileData.button_radius || 1,
+      });
       setPublicId(profileData.id);
       setPreviewUrl(profileData.avatar_url || "");
 
@@ -157,6 +195,23 @@ export default function DashboardPage() {
             url: link.url,
           }))
         );
+      }
+
+      const { data: layoutData } = await supabase
+        .from("layout")
+        .select("id, order_index, components")
+        .eq("public_id", profileData.id)
+        .order("order_index", { ascending: true });
+
+      if (layoutData && layoutData.length > 0) {
+        const loadedBlocks = layoutData
+          .map((c: any) => {
+            const blockId = c.components as BlockType;
+            return DEFAULT_LAYOUT_BLOCKS.find((b) => b.id === blockId) ?? null;
+          })
+          .filter((b: LayoutBlock | null): b is LayoutBlock => b !== null);
+
+        if (loadedBlocks.length > 0) setLayoutBlocks(loadedBlocks);
       }
     };
 
@@ -198,7 +253,10 @@ export default function DashboardPage() {
         const result = await response.json();
         alert("Profile updated!");
         if (result.data?.avatar_url) {
-          setProfile((prev) => ({ ...prev, avatar_url: result.data.avatar_url }));
+          setProfile((prev) => ({
+            ...prev,
+            avatar_url: result.data.avatar_url,
+          }));
           setPreviewUrl(result.data.avatar_url);
         }
       } else {
@@ -229,7 +287,7 @@ export default function DashboardPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          id: publicId,        // profiles.id → maps to links.public_id
+          id: publicId, // profiles.id → maps to links.public_id
           title: newLink.title,
           url: newLink.url,
         }),
@@ -251,7 +309,11 @@ export default function DashboardPage() {
   };
 
   // Handle updating a link
-  const handleUpdateLink = (id: string, field: "title" | "url", value: string) => {
+  const handleUpdateLink = (
+    id: string,
+    field: "title" | "url",
+    value: string
+  ) => {
     setLinks((prev) =>
       prev.map((link) => (link.id === id ? { ...link, [field]: value } : link))
     );
@@ -293,6 +355,14 @@ export default function DashboardPage() {
     }
   };
 
+  const currentTheme = {
+    background_color: theme.background_color,
+    text_color: theme.text_color,
+    button_color: theme.button_color,
+    avatar: theme.avatar,
+    button: theme.button,
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       <DashboardHeader
@@ -319,7 +389,12 @@ export default function DashboardPage() {
           onDeleteLink={handleDeleteLink}
         />
 
-        <PhonePreview profile={profile} links={links} />
+        <PhonePreview
+          profile={profile}
+          links={links}
+          theme={currentTheme}
+          layout={layoutBlocks}
+        />
       </main>
     </div>
   );
