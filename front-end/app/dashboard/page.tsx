@@ -85,14 +85,6 @@ export default function DashboardPage() {
     },
   });
 
-  if (!initialized || !profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading profile...
-      </div>
-    );
-  }
-
   // Clean url from facebook redirect
   useEffect(() => {
     if (window.location.hash === "#_=_") {
@@ -111,8 +103,18 @@ export default function DashboardPage() {
       }
       setToken(data.session?.access_token || "");
     };
-    fetchSession();
-  }, []);
+    if (initialized) {
+      fetchSession();
+    }
+  }, [router]);
+
+  if (!initialized || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading profile...
+      </div>
+    );
+  }
 
   // Fetch user data on mount
   // useEffect(() => {
