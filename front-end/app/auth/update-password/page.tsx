@@ -1,5 +1,5 @@
-import ForgotTag from "@/components/forgot-tag";
-import { UpdatePasswordForm } from "@/components/update-password-form";
+import ForgotTag from "@/components/auth/forgot-tag";
+import { UpdatePasswordForm } from "@/components/auth/update-password-form";
 
 export default function Page() {
   return (

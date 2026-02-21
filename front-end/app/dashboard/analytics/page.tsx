@@ -1,22 +1,14 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { Profile, Link } from "@/types";
-import { apiFetch } from "@/lib/api";
+// import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+// import { Profile, Link } from "@/types";
+// import { apiFetch } from "@/lib/api";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import { useRouter } from "next/navigation";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+// import { useRouter } from "next/navigation";
 import {
   ChartContainer,
   ChartLegend,
@@ -43,28 +35,28 @@ export default function AnalyticsPage() {
   const [totalClicks, setTotalClicks] = useState<number>(0);
 
   // For profile dialog (reusing DashboardHeader)
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const fileInputRef = React.useRef<HTMLInputElement>(null!);
-  const [profile, setProfile] = useState<Profile>({
-    public_link: "",
-    display_name: "",
-    bio: "",
-    avatar_url: "",
-  });
-  const [publicId, setPublicId] = useState("");
-  const [token, setToken] = useState("");
-  const router = useRouter();
+  // const [isUpdating, setIsUpdating] = useState(false);
+  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  // const [previewUrl, setPreviewUrl] = useState<string>("");
+  // const fileInputRef = React.useRef<HTMLInputElement>(null!);
+  // const [profile, setProfile] = useState<Profile>({
+  //   public_link: "",
+  //   display_name: "",
+  //   bio: "",
+  //   avatar_url: "",
+  // });
+  // const [publicId, setPublicId] = useState("");
+  // const [token, setToken] = useState("");
+  // const router = useRouter();
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) router.push("/auth/login");
-      setToken(data.session?.access_token || "");
-    };
-    fetchSession();
-  }, [router]);
+  // useEffect(() => {
+  //   const fetchSession = async () => {
+  //     const { data } = await supabase.auth.getSession();
+  //     if (!data.session) router.push("/auth/login");
+  //     setToken(data.session?.access_token || "");
+  //   };
+  //   fetchSession();
+  // }, [router]);
 
   useEffect(() => {
     const getUserData = async () => {
@@ -76,22 +68,22 @@ export default function AnalyticsPage() {
 
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, public_link, display_name, bio, avatar_url")
+        .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (!profileData) return;
 
       if (profileData) {
-        setProfile({
-          public_link: profileData.public_link || "",
-          display_name: profileData.display_name || "",
-          bio: profileData.bio || "",
-          avatar_url: profileData.avatar_url || "",
-        });
+        //   setProfile({
+        //     public_link: profileData.public_link || "",
+        //     display_name: profileData.display_name || "",
+        //     bio: profileData.bio || "",
+        //     avatar_url: profileData.avatar_url || "",
+        //   });
 
-        setPublicId(profileData.id);
-        setPreviewUrl(profileData.avatar_url || "");
+        //   setPublicId(profileData.id);
+        //   setPreviewUrl(profileData.avatar_url || "");
 
         const { data: linksData } = await supabase
           .from("links")
@@ -148,48 +140,48 @@ export default function AnalyticsPage() {
   }, [supabase]);
 
   // Handle profile update (from header)
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsUpdating(true);
-    try {
-      const formData = new FormData();
-      formData.append("public_id", publicId);
-      formData.append("public_link", profile.public_link);
-      formData.append("display_name", profile.display_name || "");
-      formData.append("bio", profile.bio || "");
-      if (selectedFile) formData.append("avatar", selectedFile);
+  // const handleUpdateProfile = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsUpdating(true);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("public_id", publicId);
+  //     formData.append("public_link", profile.public_link);
+  //     formData.append("display_name", profile.display_name || "");
+  //     formData.append("bio", profile.bio || "");
+  //     if (selectedFile) formData.append("avatar", selectedFile);
 
-      const response = await apiFetch("/api/v1/profile/update", {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+  //     const response = await apiFetch("/api/v1/profile/update", {
+  //       method: "PATCH",
+  //       headers: { Authorization: `Bearer ${token}` },
+  //       body: formData,
+  //     });
 
-      if (response.ok) {
-        const result = await response.json();
-        alert("Profile updated!");
-        if (result.data) {
-          setProfile((prev) => ({ ...prev, avatar_url: result.data }));
-          setPreviewUrl(result.data);
-        }
-      } else {
-        alert("Failed to update profile");
-      }
-    } catch (error: any) {
-      alert(error.message);
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+  //     if (response.ok) {
+  //       const result = await response.json();
+  //       alert("Profile updated!");
+  //       if (result.data) {
+  //         setProfile((prev) => ({ ...prev, avatar_url: result.data }));
+  //         setPreviewUrl(result.data);
+  //       }
+  //     } else {
+  //       alert("Failed to update profile");
+  //     }
+  //   } catch (error: any) {
+  //     alert(error.message);
+  //   } finally {
+  //     setIsUpdating(false);
+  //   }
+  // };
 
   // Handle file change for avatar (from header)
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     setSelectedFile(file);
+  //     setPreviewUrl(URL.createObjectURL(file));
+  //   }
+  // };
 
   const chartConfig = {
     totalClicks: {
@@ -200,7 +192,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-6">
-      <DashboardHeader
+      {/* <DashboardHeader
         profile={profile}
         onUpdateProfile={handleUpdateProfile}
         isUpdating={isUpdating}
@@ -208,7 +200,7 @@ export default function AnalyticsPage() {
         fileInputRef={fileInputRef}
         onFileChange={handleFileChange}
         onProfileChange={setProfile}
-      />
+      /> */}
       <h1 className="text-2xl font-bold">Analytics</h1>
       <p>Total clicks: {totalClicks}</p>
 

@@ -2,26 +2,26 @@
 
 "use client";
 
-import React from "react";
+// import React from "react";
 import { Globe, ExternalLink } from "lucide-react";
-import { Link, Profile } from "@/types";
+// import { Link, Profile } from "@/types";
 import {
   LayoutBlock,
-  DEFAULT_LAYOUT_BLOCKS,
-} from "@/components/LayoutCustomizer";
+} from "@/components/dashboard/LayoutCustomizer";
+import { useProfile } from "@/hooks/useProfile";
 
-interface PhonePreviewProps {
-  profile: Profile;
-  links: Link[];
-  theme?: {
-    background_color?: string;
-    text_color?: string;
-    button_color?: string;
-    avatar?: number;
-    button?: number;
-  };
-  layout?: LayoutBlock[];
-}
+// interface PhonePreviewProps {
+//   profile: Profile;
+//   links: Link[];
+//   theme?: {
+//     background_color?: string;
+//     text_color?: string;
+//     button_color?: string;
+//     avatar?: number;
+//     button?: number;
+//   };
+//   layout?: LayoutBlock[];
+// }
 
 const alignClass: Record<string, string> = {
   left: "items-start text-left",
@@ -29,17 +29,23 @@ const alignClass: Record<string, string> = {
   right: "items-end text-right",
 };
 
-export function PhonePreview({
-  profile,
-  links,
-  theme,
-  layout = DEFAULT_LAYOUT_BLOCKS,
-}: PhonePreviewProps) {
-  const backgroundColor = theme?.background_color || "#F8FAFC";
-  const textColor = theme?.text_color || "#0F172A";
-  const buttonColor = theme?.button_color || "#6366F1";
-  const avatarRadius = theme?.avatar;
-  const buttonRadius = theme?.button;
+export function PhonePreview() {
+//   {
+//   profile,
+//   links,
+//   theme,
+//   layout = DEFAULT_LAYOUT_BLOCKS,
+// }: PhonePreviewProps
+  const { profile, links, layoutBlocks } = useProfile();
+
+  if (!profile || !links || !layoutBlocks) return null;
+
+  const backgroundColor = profile.background_color || "#F8FAFC";
+  const textColor = profile.text_color || "#0F172A";
+  const buttonColor = profile.button_color || "#6366F1";
+  const avatarRadius = profile.avatar_radius;
+  const buttonRadius = profile.button_radius;
+  const layout = layoutBlocks;
 
   const handleClick = () => {
     const url = `${window.location.origin}/${profile.public_link}`;

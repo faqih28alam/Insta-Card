@@ -1,7 +1,7 @@
 // components/ProfileDialog.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,32 +15,61 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { User, Camera } from "lucide-react";
-import { Profile } from "@/types";
-import { publicFetch } from "@/lib/api";
+// import { Profile } from "@/types";
+import { apiFetch, publicFetch } from "@/lib/api";
+import { useProfile } from "@/hooks/useProfile";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
-interface ProfileDialogProps {
-  profile: Profile;
-  onUpdateProfile: (e: React.FormEvent) => Promise<void> | void;
-  isUpdating: boolean;
-  previewUrl: string;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onProfileChange: (profile: Profile) => void;
-}
+// interface ProfileDialogProps {
+//   profile: Profile;
+//   onUpdateProfile: (e: React.FormEvent) => Promise<void> | void;
+//   isUpdating: boolean;
+//   previewUrl: string;
+//   fileInputRef: React.RefObject<HTMLInputElement>;
+//   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+//   onProfileChange: (profile: Profile) => void;
+// }
 
-export function ProfileDialog({
-  profile,
-  onUpdateProfile,
-  isUpdating,
-  previewUrl,
-  fileInputRef,
-  onFileChange,
-  onProfileChange,
-}: ProfileDialogProps) {
+export function ProfileDialog() {
+  //   {
+  //   profile,
+  //   onUpdateProfile,
+  //   isUpdating,
+  //   previewUrl,
+  //   fileInputRef,
+  //   onFileChange,
+  //   onProfileChange,
+  // }: ProfileDialogProps
+
   const [publicLink, setPublicLink] = useState("");
   const [available, setAvailable] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [token, setToken] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null!);
+
+  const { profile, setProfile } = useProfile();
+  const router = useRouter();
+  const supabase = createClient();
+
+  if (!profile) return null;
 
   useEffect(() => {
+    const fetchSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        router.push("/auth/login");
+      }
+      setToken(data.session?.access_token || "");
+    };
+    fetchSession();
+  }, []);
+
+  useEffect(() => {
+    setPublicLink(profile.public_link);
+
     const timer = setTimeout(() => {
       if (!publicLink) {
         setAvailable(false);
@@ -59,7 +88,9 @@ export function ProfileDialog({
 
       const checkPublicLink = async () => {
         try {
-          const response = await publicFetch(`/api/v1/profile/check/${publicLink}`);
+          const response = await publicFetch(
+            `/api/v1/profile/check/${publicLink}`
+          );
           const data = await response.json();
           setAvailable(data.available);
         } catch {
@@ -71,15 +102,67 @@ export function ProfileDialog({
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [publicLink, profile.public_link]);
+  }, [publicLink, profile]);
+
+  // Handle file selection for avatar
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // Handle profile update
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+    if (!profile) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("public_id", profile.id as string);
+      formData.append("public_link", profile.public_link);
+      formData.append("display_name", profile.display_name || "");
+      formData.append("bio", profile.bio || "");
+
+      if (selectedFile) {
+        formData.append("avatar", selectedFile);
+      }
+
+      const response = await apiFetch("/api/v1/profile/update", {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert("Profile updated!");
+        if (result.data) {
+          setProfile((prev) =>
+            prev ? { ...prev, avatar_url: result.data } : prev
+          );
+          setPreviewUrl(result.data);
+        }
+      } else {
+        alert("Failed to update profile");
+      }
+    } catch (error: any) {
+      console.error("Update failed:", error);
+      alert(error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
         <button className="w-9 h-9 bg-[#EEF2FF] rounded-full flex items-center justify-center border border-[#6366F1] hover:bg-[#6366F1] hover:text-white transition-colors group">
-          {profile.avatar ? (
+          {profile.avatar_url ? (
             <img
-              src={profile.avatar}
+              src={profile.avatar_url}
               alt="Avatar"
               className="w-full h-full object-cover rounded-full"
             />
@@ -89,7 +172,7 @@ export function ProfileDialog({
         </button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={onUpdateProfile}>
+        <form onSubmit={handleUpdateProfile}>
           <DialogHeader>
             <DialogTitle>Edit Profile</DialogTitle>
             <DialogDescription>Suit your Profile here</DialogDescription>
@@ -98,7 +181,7 @@ export function ProfileDialog({
             <input
               type="file"
               ref={fileInputRef}
-              onChange={onFileChange}
+              onChange={handleFileChange}
               className="hidden"
               accept="image/*"
             />
@@ -106,9 +189,9 @@ export function ProfileDialog({
               onClick={() => fileInputRef.current?.click()}
               className="relative w-20 h-20 bg-slate-100 rounded-full border flex items-center justify-center cursor-pointer hover:bg-slate-200 group overflow-hidden"
             >
-              {previewUrl || profile.avatar ? (
+              {previewUrl || profile.avatar_url ? (
                 <img
-                  src={previewUrl || profile.avatar}
+                  src={previewUrl || profile.avatar_url}
                   alt="Avatar preview"
                   className="w-full h-full object-cover"
                 />
@@ -137,7 +220,7 @@ export function ProfileDialog({
                 id="public-link"
                 value={profile.public_link}
                 onChange={(e) => {
-                  onProfileChange({ ...profile, public_link: e.target.value });
+                  setProfile({ ...profile, public_link: e.target.value });
                   setPublicLink(e.target.value);
                 }}
               />
@@ -148,7 +231,7 @@ export function ProfileDialog({
                 id="bio"
                 value={profile.bio}
                 onChange={(e) =>
-                  onProfileChange({ ...profile, bio: e.target.value })
+                  setProfile({ ...profile, bio: e.target.value })
                 }
               />
             </div>

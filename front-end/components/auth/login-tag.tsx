@@ -1,5 +1,5 @@
 import { TrendingUp } from "lucide-react";
-import { Card } from "./ui/card";
+import { Card } from "../ui/card";
 
 export default function LoginTag() {
   return (
@@ -18,7 +18,7 @@ export default function LoginTag() {
       <div className="fixed bottom-8 w-full max-w-2xl flex justify-center xl:justify-end">
         <Card className="flex gap-5 items-center p-6 bg-white/5 backdrop-blur border border-white/30 shadow-md">
           <section className="bg-green-500/30 p-2 rounded-full">
-            <TrendingUp className="text-green-500"/>
+            <TrendingUp className="text-green-500" />
           </section>
           <section>
             <p className="text-xl text-gray-300 font-semibold">Total Views</p>

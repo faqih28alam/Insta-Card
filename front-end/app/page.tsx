@@ -1,6 +1,6 @@
 "use client";
 
-import { ThemeToggle } from "@/components/toggle";
+import { ThemeToggle } from "@/components/public-page/toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
@@ -14,10 +14,14 @@ export default function LandingPage() {
         </h1>
         <div className="space-x-4">
           <Button variant="ghost">
-            <Link href="/auth/login" className="dark:text-white">Sign in</Link>
+            <Link href="/auth/login" className="dark:text-white">
+              Sign in
+            </Link>
           </Button>
           <Button className="bg-indigo-600 hover:bg-indigo-700">
-            <Link href="/auth/sign-up" className="text-white">Sign up for free</Link>
+            <Link href="/auth/sign-up" className="text-white">
+              Sign up for free
+            </Link>
           </Button>
           <ThemeToggle />
         </div>
@@ -43,7 +47,10 @@ export default function LandingPage() {
               className="outline-none w-32 bg-transparent"
             />
           </div>
-          <Button size="lg" className="bg-indigo-600 hover:bg-indigo-700 px-8 text-white">
+          <Button
+            size="lg"
+            className="bg-indigo-600 hover:bg-indigo-700 px-8 text-white"
+          >
             Claim Your Link
           </Button>
         </div>
