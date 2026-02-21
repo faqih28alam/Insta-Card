@@ -59,9 +59,6 @@ export default function DashboardPage() {
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const { profile, links, setLinks, initialized } = useProfile();
 
-  if (!initialized) return <div>Loading...</div>;
-  if (!profile) return <div>Profile not found</div>;
-
   // ✅ MOVED UP: Hook must be declared before any useEffect that calls setLinks
   const { sensors, handleDragEnd } = useDragAndDrop({
     links,
@@ -87,6 +84,14 @@ export default function DashboardPage() {
       }
     },
   });
+
+  if (!initialized || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Loading profile...
+      </div>
+    );
+  }
 
   // Clean url from facebook redirect
   useEffect(() => {
