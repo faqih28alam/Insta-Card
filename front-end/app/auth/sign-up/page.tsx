@@ -1,5 +1,5 @@
-import { SignUpForm } from "@/components/sign-up-form";
-import SignUpTag from "@/components/sign-up-tag";
+import { SignUpForm } from "@/components/auth/sign-up-form";
+import SignUpTag from "@/components/auth/sign-up-tag";
 
 export default function Page() {
   return (

@@ -1,5 +1,5 @@
-import { LoginForm } from "@/components/login-form";
-import LoginTag from "@/components/login-tag";
+import { LoginForm } from "@/components/auth/login-form";
+import LoginTag from "@/components/auth/login-tag";
 
 export default function Page() {
   return (

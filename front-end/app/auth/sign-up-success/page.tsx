@@ -1,4 +1,4 @@
-import SignUpSuccess from "@/components/sign-up-success";
+import SignUpSuccess from "@/components/auth/sign-up-success";
 
 export default function Page() {
   return (

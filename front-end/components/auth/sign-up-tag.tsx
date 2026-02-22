@@ -1,5 +1,5 @@
-import { Card } from "./ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { Card } from "../ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 
 export default function SignUpTag() {
   return (
