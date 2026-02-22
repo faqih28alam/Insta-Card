@@ -23,12 +23,16 @@ import {
   BarChart2,
   LogOut,
   ExternalLink,
-  Settings2
+  Settings2,
+  Plus,
+  RefreshCw
 } from "lucide-react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import QRModal from "../public-page/QRModal";
 import { useProfile } from "@/hooks/useProfile";
 import { ProfileDialog } from "./ProfileDialog";
+import { AddLinkHub } from "./AddLinkHub";
+// import { SwitchLinkHub } from "./SwitchLinkHub";
 
 export function DashboardHeader() {
   const pathname = usePathname();
@@ -153,6 +157,36 @@ export function DashboardHeader() {
             </div>
 
             <DropdownMenuSeparator />
+
+            {/* Add another LinkHub */}
+            <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              className="flex items-center gap-2.5 cursor-pointer rounded-md p-0"
+            >
+              <AddLinkHub
+                trigger={
+                  <div className="flex items-center gap-2.5 w-full px-2 py-1.5">
+                    <Plus className="w-4 h-4" />
+                    Add another LinkHub
+                  </div>
+                }
+              />
+            </DropdownMenuItem>
+
+            {/* Switch LinkHub URL */}
+            {/* <DropdownMenuItem
+              onSelect={(e) => e.preventDefault()}
+              className="flex items-center gap-2.5 cursor-pointer rounded-md p-0"
+            >
+              <SwitchLinkHub
+                trigger={
+                  <button className="flex items-center gap-2.5 w-full px-2 py-1.5 text-sm rounded-md">
+                    <RefreshCw className="w-4 h-4 text-slate-500" />
+                    Switch LinkHubs
+                  </button>
+                }
+              />
+            </DropdownMenuItem> */}
 
             {/* Mobile-only Nav Links */}
             <div className="md:hidden">
