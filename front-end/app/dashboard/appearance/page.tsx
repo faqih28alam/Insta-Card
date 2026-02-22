@@ -68,30 +68,12 @@ const supabase = createClient();
 
 export default function AppearancePage() {
   const router = useRouter();
-
-  // const [profile, setProfile] = useState<Profile>({
-  //   public_link: "",
-  //   display_name: "",
-  //   bio: "",
-  //   avatar_url: "",
-  // });
-  // const [publicId, setPublicId] = useState("");
-  // const [links, setLinks] = useState<Link[]>([]);
   const [selectedTheme, setSelectedTheme] = useState<string>("default");
   const [token, setToken] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  // const [isUpdating, setIsUpdating] = useState(false);
-  // const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  // const [previewUrl, setPreviewUrl] = useState<string>("");
-  // const fileInputRef = React.useRef<HTMLInputElement>(null!);
-
   const [backgroundHex, setBackgroundHex] = useState("#F8FAFC");
   const [textHex, setTextHex] = useState("#0F172A");
   const [buttonHex, setButtonHex] = useState("#6366F1");
-
-  // const [layoutBlocks, setLayoutBlocks] = useState<LayoutBlock[]>(
-  //   DEFAULT_LAYOUT_BLOCKS
-  // );
   const [isSavingLayout, setIsSavingLayout] = useState(false);
   const [layoutRowIds, setLayoutRowIds] = useState<Record<string, number>>({});
   const [avatarRadius, setAvatarRadius] = useState<number[]>([1]);
@@ -149,23 +131,6 @@ export default function AppearancePage() {
     };
 
     fetchIds();
-    // if (layoutData && layoutData.length > 0) {
-    //   // Store row IDs keyed by component name
-    //   const rowIds: Record<string, number> = {};
-    //   layoutData.forEach((c: any) => {
-    //     rowIds[c.components] = c.id;
-    //   });
-    //   setLayoutRowIds(rowIds);
-
-    //   const loadedBlocks = layoutData
-    //     .map((c: any) => {
-    //       const blockId = c.components as BlockType;
-    //       return DEFAULT_LAYOUT_BLOCKS.find((b) => b.id === blockId) ?? null;
-    //     })
-    //     .filter((b: LayoutBlock | null): b is LayoutBlock => b !== null);
-
-    //   if (loadedBlocks.length > 0) setLayoutBlocks(loadedBlocks);
-    // }
   }, [profile]);
 
   if (!initialized || !profile) {
@@ -176,144 +141,6 @@ export default function AppearancePage() {
     );
   }
 
-  // useEffect(() => {
-  //   const getUserData = async () => {
-  //     const {
-  //       data: { user },
-  //       error,
-  //     } = await supabase.auth.getUser();
-  //     if (error || !user) return;
-
-  //     const { data: profileData } = await supabase
-  //       .from("profiles")
-  //       .select(
-  //         "id, public_link, display_name, bio, avatar_url, theme_id, background_color, text_color, button_color, avatar_radius, button_radius"
-  //       )
-  //       .eq("user_id", user.id)
-  //       .maybeSingle();
-
-  //     if (profileData) {
-  //       setProfile({
-  //         public_link: profileData.public_link || "",
-  //         display_name: profileData.display_name || "",
-  //         bio: profileData.bio || "",
-  //         avatar_url: profileData.avatar_url || "",
-  //       });
-  //       setPublicId(profileData.id);
-  //       setPreviewUrl(profileData.avatar_url || "");
-  //       setSelectedTheme(profileData.theme_id || "default");
-  //       if (profileData.background_color)
-  //         setBackgroundHex(profileData.background_color);
-  //       if (profileData.text_color) setTextHex(profileData.text_color);
-  //       if (profileData.button_color) setButtonHex(profileData.button_color);
-  //       if (profileData.avatar_radius)
-  //         setAvatarRadius([profileData.avatar_radius]);
-  //       if (profileData.button_radius)
-  //         setButtonRadius([profileData.button_radius]);
-
-  //       const { data: linksData } = await supabase
-  //         .from("links")
-  //         .select("id, title, url, order_index")
-  //         .eq("public_id", profileData.id)
-  //         .order("order_index", { ascending: true });
-
-  //       if (linksData) {
-  //         setLinks(
-  //           linksData.map((l) => ({
-  //             id: l.id.toString(),
-  //             title: l.title,
-  //             url: l.url,
-  //           }))
-  //         );
-  //       }
-
-  //       // Fetch layout from database
-  //       const { data: layoutData } = await supabase
-  //         .from("layout")
-  //         .select("id, order_index, components")
-  //         .eq("public_id", profileData.id)
-  //         .order("order_index", { ascending: true });
-
-  // if (layoutData && layoutData.length > 0) {
-  //   // Store row IDs keyed by component name
-  //   const rowIds: Record<string, number> = {};
-  //   layoutData.forEach((c: any) => {
-  //     rowIds[c.components] = c.id;
-  //   });
-  //   setLayoutRowIds(rowIds);
-
-  //   const loadedBlocks = layoutData
-  //     .map((c: any) => {
-  //       const blockId = c.components as BlockType;
-  //       return DEFAULT_LAYOUT_BLOCKS.find((b) => b.id === blockId) ?? null;
-  //     })
-  //     .filter((b: LayoutBlock | null): b is LayoutBlock => b !== null);
-
-  //   if (loadedBlocks.length > 0) setLayoutBlocks(loadedBlocks);
-  // }
-  //     }
-  //   };
-  //   getUserData();
-  // }, []);
-
-  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (file) {
-  //     setSelectedFile(file);
-  //     setPreviewUrl(URL.createObjectURL(file));
-  //   }
-  // };
-
-  // const handleUpdateProfile = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsUpdating(true);
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("public_id", publicId);
-  //     formData.append("public_link", profile.public_link);
-  //     formData.append("display_name", profile.display_name || "");
-  //     formData.append("bio", profile.bio || "");
-  //     if (selectedFile) formData.append("avatar", selectedFile);
-
-  //     const response = await apiFetch("/api/v1/profile/update", {
-  //       method: "PATCH",
-  //       headers: { Authorization: `Bearer ${token}` },
-  //       body: formData,
-  //     });
-
-  //     if (response.ok) {
-  //       const result = await response.json();
-  //       alert("Profile updated!");
-  //       if (result.data) {
-  //         setProfile((prev) => ({ ...prev, avatar_url: result.data }));
-  //         setPreviewUrl(result.data);
-  //       }
-  //     } else {
-  //       alert("Failed to update profile");
-  //     }
-  //   } catch (error: any) {
-  //     alert(error.message);
-  //   } finally {
-  //     setIsUpdating(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   setProfile((prev) =>
-  //     prev
-  //       ? {
-  //           ...prev,
-  //           theme_id: "costum",
-  //           background_color: backgroundHex,
-  //           text_color: textHex,
-  //           button_color: buttonHex,
-  //           avatar_radius: avatarRadius[0],
-  //           button_radius: buttonRadius[0],
-  //         }
-  //       : prev
-  //   );
-  // }, [backgroundHex, textHex, buttonHex, avatarRadius[0], buttonRadius[0]]);
-
   const handleThemeSelect = async (themeId: string) => {
     const t = PRESET_THEMES.find((t) => t.id === themeId);
     if (!t) return;
@@ -321,12 +148,12 @@ export default function AppearancePage() {
     setProfile((prev) =>
       prev
         ? {
-            ...prev,
-            theme_id: themeId,
-            background_color: t.background_color,
-            text_color: t.text_color,
-            button_color: t.button_color,
-          }
+          ...prev,
+          theme_id: themeId,
+          background_color: t.background_color,
+          text_color: t.text_color,
+          button_color: t.button_color,
+        }
         : prev
     );
 
@@ -427,25 +254,8 @@ export default function AppearancePage() {
     }
   };
 
-  // const currentTheme = {
-  //   background_color: backgroundHex,
-  //   text_color: textHex,
-  //   button_color: buttonHex,
-  //   avatar: avatarRadius[0],
-  //   button: buttonRadius[0],
-  // };
-
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-      {/* <DashboardHeader
-        profile={profile}
-        onUpdateProfile={handleUpdateProfile}
-        isUpdating={isUpdating}
-        previewUrl={previewUrl}
-        fileInputRef={fileInputRef}
-        onFileChange={handleFileChange}
-        onProfileChange={setProfile}
-      /> */}
 
       <main className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 p-6">
         <div className="flex-1 space-y-6">
@@ -469,15 +279,13 @@ export default function AppearancePage() {
                   key={theme.id}
                   onClick={() => handleThemeSelect(theme.id)}
                   disabled={isSaving}
-                  className={`relative p-5 rounded-2xl border-2 transition-all text-left ${
-                    selectedTheme === theme.id
-                      ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
-                      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
-                  } ${
-                    isSaving
+                  className={`relative p-5 rounded-2xl border-2 transition-all text-left ${selectedTheme === theme.id
+                    ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
+                    : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
+                    } ${isSaving
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"
-                  }`}
+                    }`}
                 >
                   {selectedTheme === theme.id && (
                     <div className="absolute top-3 right-3 w-5 h-5 bg-[#6366F1] rounded-full flex items-center justify-center">
@@ -542,31 +350,6 @@ export default function AppearancePage() {
               )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* {[
-                {
-                  label: "Background",
-                  hex: backgroundHex,
-                  set: setBackgroundHex,
-                },
-                { label: "Text", hex: textHex, set: setTextHex },
-                { label: "Button", hex: buttonHex, set: setButtonHex },
-              ].map(({ label, hex, set }) => (
-                <div key={label} className="flex flex-col items-center gap-3">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    {label}
-                  </p>
-                  <Colorful color={hex} onChange={(c: any) => set(c.hex)} />
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-5 h-5 rounded-md border border-slate-200 shadow-inner"
-                      style={{ backgroundColor: hex }}
-                    />
-                    <span className="text-xs font-mono text-slate-500">
-                      {hex}
-                    </span>
-                  </div>
-                </div>
-              ))} */}
               {[
                 {
                   label: "Background",
@@ -602,10 +385,10 @@ export default function AppearancePage() {
                       setProfile((prev) =>
                         prev
                           ? {
-                              ...prev,
-                              [profileKey]: newHex,
-                              theme_id: "costum",
-                            }
+                            ...prev,
+                            [profileKey]: newHex,
+                            theme_id: "costum",
+                          }
                           : prev
                       );
                     }}
@@ -643,10 +426,10 @@ export default function AppearancePage() {
                     setProfile((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            avatar_radius: value[0],
-                            theme_id: "costum",
-                          }
+                          ...prev,
+                          avatar_radius: value[0],
+                          theme_id: "costum",
+                        }
                         : prev
                     );
                   }}
@@ -673,10 +456,10 @@ export default function AppearancePage() {
                     setProfile((prev) =>
                       prev
                         ? {
-                            ...prev,
-                            button_radius: value[0],
-                            theme_id: "costum",
-                          }
+                          ...prev,
+                          button_radius: value[0],
+                          theme_id: "costum",
+                        }
                         : prev
                     );
                   }}
@@ -763,12 +546,7 @@ export default function AppearancePage() {
 
         <div className="lg:w-[300px]">
           <div className="sticky top-24">
-            <PhonePreview
-            // profile={profile}
-            // links={links}
-            // theme={currentTheme}
-            // layout={layoutBlocks}
-            />
+            <PhonePreview />
           </div>
         </div>
       </main>

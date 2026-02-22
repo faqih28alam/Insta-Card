@@ -100,7 +100,7 @@ export default function Initializer() {
         .order("order_index", { ascending: true });
 
       if (linksData) {
-        // ✅ setLinks is now available — hook is declared above
+
         setLinks(
           linksData.map((link) => ({
             id: link.id.toString(),

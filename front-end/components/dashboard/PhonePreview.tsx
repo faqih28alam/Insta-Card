@@ -2,26 +2,11 @@
 
 "use client";
 
-// import React from "react";
 import { Globe, ExternalLink } from "lucide-react";
-// import { Link, Profile } from "@/types";
 import {
   LayoutBlock,
 } from "@/components/dashboard/LayoutCustomizer";
 import { useProfile } from "@/hooks/useProfile";
-
-// interface PhonePreviewProps {
-//   profile: Profile;
-//   links: Link[];
-//   theme?: {
-//     background_color?: string;
-//     text_color?: string;
-//     button_color?: string;
-//     avatar?: number;
-//     button?: number;
-//   };
-//   layout?: LayoutBlock[];
-// }
 
 const alignClass: Record<string, string> = {
   left: "items-start text-left",
@@ -30,12 +15,7 @@ const alignClass: Record<string, string> = {
 };
 
 export function PhonePreview() {
-//   {
-//   profile,
-//   links,
-//   theme,
-//   layout = DEFAULT_LAYOUT_BLOCKS,
-// }: PhonePreviewProps
+
   const { profile, links, layoutBlocks } = useProfile();
 
   if (!profile || !links || !layoutBlocks) return null;
