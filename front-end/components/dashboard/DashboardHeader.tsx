@@ -32,7 +32,7 @@ import QRModal from "../public-page/QRModal";
 import { useProfile } from "@/hooks/useProfile";
 import { ProfileDialog } from "./ProfileDialog";
 import { AddLinkHub } from "./AddLinkHub";
-// import { SwitchLinkHub } from "./SwitchLinkHub";
+import { SwitchLinkHub } from "./SwitchLinkHub";
 
 export function DashboardHeader() {
   const pathname = usePathname();
@@ -174,7 +174,7 @@ export function DashboardHeader() {
             </DropdownMenuItem>
 
             {/* Switch LinkHub URL */}
-            {/* <DropdownMenuItem
+            <DropdownMenuItem
               onSelect={(e) => e.preventDefault()}
               className="flex items-center gap-2.5 cursor-pointer rounded-md p-0"
             >
@@ -186,7 +186,7 @@ export function DashboardHeader() {
                   </button>
                 }
               />
-            </DropdownMenuItem> */}
+            </DropdownMenuItem>
 
             {/* Mobile-only Nav Links */}
             <div className="md:hidden">

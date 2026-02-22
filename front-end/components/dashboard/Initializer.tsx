@@ -43,9 +43,10 @@ export default function Initializer() {
           "id, public_link, display_name, bio, avatar_url, theme_id, background_color, text_color, button_color, avatar_radius, button_radius"
         )
         .eq("user_id", user.id)
-        .maybeSingle();
+        .order("created_at", { ascending: true })
+        .limit(1);
 
-      let activeProfile = profileData;
+      let activeProfile = profileData?.[0];
 
       if (!activeProfile) {
         const meta = user.user_metadata || {};
