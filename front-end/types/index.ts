@@ -1,6 +1,6 @@
 // types/index.ts
 export interface Link {
-    id?: string;
+    id: string;
     public_id?: string;
     title: string;
     url: string;

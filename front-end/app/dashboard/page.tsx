@@ -175,7 +175,7 @@ export default function DashboardPage() {
           isAddDialogOpen={isAddDialogOpen}
           onAddDialogChange={setIsAddDialogOpen}
           newLink={newLink}
-          onNewLinkChange={setNewLink}
+          onNewLinkChange={(link) => setNewLink({ id: "", ...link })}
           onAddLink={handleAddLink}
           onUpdateLink={handleUpdateLink}
           onDeleteLink={handleDeleteLink}
