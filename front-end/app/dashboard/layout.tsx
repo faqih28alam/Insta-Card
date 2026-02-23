@@ -14,7 +14,7 @@ export default function DashboardLayout({
         <Initializer />
         <DashboardHeader />
         <div>{children}</div>
-        <Toaster />
+        <Toaster position="top-center" />
       </ProfileProvider>
     </main>
   );

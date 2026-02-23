@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { Slider } from "@/components/ui/slider";
 import { useProfile } from "@/hooks/useProfile";
+import { fetchToken } from "@/lib/utils";
 const Colorful = dynamic(
   () => import("@uiw/react-color").then((m) => m.Colorful),
   {
@@ -70,7 +71,6 @@ const supabase = createClient();
 export default function AppearancePage() {
   const router = useRouter();
   const [selectedTheme, setSelectedTheme] = useState<string>("default");
-  const [token, setToken] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [backgroundHex, setBackgroundHex] = useState("#F8FAFC");
   const [textHex, setTextHex] = useState("#0F172A");
@@ -83,13 +83,18 @@ export default function AppearancePage() {
   const { profile, setProfile, layoutBlocks, setLayoutBlocks, initialized } =
     useProfile();
 
+  // Fetch session token
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) router.push("/auth/login");
-      setToken(data.session?.access_token || "");
+    const loadToken = async () => {
+      const token = await fetchToken();
+
+      if (!token) {
+        router.push("/auth/login");
+        return;
+      }
     };
-    fetchSession();
+
+    loadToken();
   }, [router]);
 
   useEffect(() => {
@@ -168,6 +173,7 @@ export default function AppearancePage() {
     setIsSaving(true);
 
     try {
+      const token = await fetchToken()
       const response = await apiFetch("/api/v1/profile/theme", {
         method: "PATCH",
         headers: {
@@ -183,6 +189,7 @@ export default function AppearancePage() {
         }),
       });
       if (!response.ok) toast.error("Failed to save theme");
+      else toast.success("Theme saved!");
     } catch {
       toast.error("Failed to save theme");
     } finally {
@@ -194,6 +201,7 @@ export default function AppearancePage() {
     setSelectedTheme("costum");
     setIsSaving(true);
     try {
+      const token = await fetchToken()
       const response = await apiFetch("/api/v1/profile/theme", {
         method: "PATCH",
         headers: {
@@ -225,6 +233,7 @@ export default function AppearancePage() {
   const handleSaveLayout = async () => {
     setIsSavingLayout(true);
     try {
+      const token = await fetchToken()
       // Send component name (text) + order_index — matching the DB schema
       const components = layoutBlocks.map((block, index) => ({
         id: layoutRowIds[block.id],
@@ -260,7 +269,6 @@ export default function AppearancePage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
-
       <main className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-10 p-6">
         <div className="flex-1 space-y-6">
           <div>
@@ -284,8 +292,8 @@ export default function AppearancePage() {
                   onClick={() => handleThemeSelect(theme.id)}
                   disabled={isSaving}
                   className={`relative p-5 rounded-2xl border-2 transition-all text-left ${selectedTheme === theme.id
-                    ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
-                    : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
+                      ? "border-[#6366F1] bg-[#EEF2FF] shadow-md"
+                      : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
                     } ${isSaving
                       ? "opacity-50 cursor-not-allowed"
                       : "cursor-pointer"

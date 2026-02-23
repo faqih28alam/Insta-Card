@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api";
 import { useDragAndDrop } from "@/hooks/useDragAndDrop";
 import { LinkEditor } from "@/components/dashboard/LinkEditor";
@@ -10,6 +9,8 @@ import { Link } from "@/types";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner"
+import { fetchToken } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/client";
 
 const supabase = createClient();
 
@@ -17,7 +18,6 @@ export default function DashboardPage() {
   const router = useRouter();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newLink, setNewLink] = useState<Link>({ id: "", title: "", url: "" });
-  const [token, setToken] = useState("");
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const { profile, links, setLinks, initialized } = useProfile();
 
@@ -26,6 +26,7 @@ export default function DashboardPage() {
     setLinks,
     onReorder: async (newLinks) => {
       try {
+        const token = await fetchToken();
         await apiFetch("/api/v1/links/reorder", {
           method: "POST",
           headers: {
@@ -57,16 +58,16 @@ export default function DashboardPage() {
 
   // Fetch session token
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
+    const loadToken = async () => {
+      const token = await fetchToken();
+
+      if (!token) {
         router.push("/auth/login");
+        return;
       }
-      setToken(data.session?.access_token || "");
     };
-    if (initialized) {
-      fetchSession();
-    }
+
+    loadToken();
   }, [router]);
 
   if (!initialized || !profile) {
@@ -90,6 +91,7 @@ export default function DashboardPage() {
     }
 
     try {
+      const token = await fetchToken();
       const response = await apiFetch("/api/v1/links", {
         method: "POST",
         headers: {
@@ -122,7 +124,7 @@ export default function DashboardPage() {
   };
 
   // Handle updating a link
-  const handleUpdateLink = (
+  const handleUpdateLink = async (
     id: string,
     field: "title" | "url",
     value: string
@@ -133,6 +135,7 @@ export default function DashboardPage() {
 
     const key = `${id}-${field}`;
     if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+    const token = await fetchToken();
 
     debounceTimers.current[key] = setTimeout(() => {
       apiFetch(`/api/v1/links/${id}`, {
@@ -148,24 +151,36 @@ export default function DashboardPage() {
 
   // Handle deleting a link
   const handleDeleteLink = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this link?")) return;
+    toast("Are you sure you want to delete this link?", {
+      description: "This action cannot be undone.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            const token = await fetchToken();
+            const response = await apiFetch(`/api/v1/links/${id}`, {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            });
 
-    try {
-      const response = await apiFetch(`/api/v1/links/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.ok) {
-        setLinks(links.filter((link) => link.id !== id));
-      } else {
-        const error = await response.json();
-        toast.error(error.message || "Failed to delete link");
-      }
-    } catch (error) {
-      console.error("Failed to delete link", error);
-      toast.error("Failed to delete link. Please try again.");
-    }
+            if (response.ok) {
+              setLinks(links.filter((link) => link.id !== id));
+              toast.success("Link deleted successfully!");
+            } else {
+              const error = await response.json();
+              toast.error(error.message || "Failed to delete link");
+            }
+          } catch (error) {
+            console.error("Failed to delete link", error);
+            toast.error("Failed to delete link. Please try again.");
+          }
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => { },
+      },
+    });
   };
 
   if (!profile) return null;

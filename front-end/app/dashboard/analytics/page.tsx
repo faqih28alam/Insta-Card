@@ -38,7 +38,10 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const getUserData = async () => {
       try {
-        if (!profile) return;
+        if (!profile) {
+          setLoading(false);
+          return;
+        };
         const profileData = profile;
 
         const { data: linksData } = await supabase
@@ -96,7 +99,7 @@ export default function AnalyticsPage() {
       }
     };
     getUserData();
-  }, [supabase]);
+  }, [supabase, profile]);
 
   const chartConfig = {
     totalClicks: {
