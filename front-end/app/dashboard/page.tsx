@@ -10,9 +10,6 @@ import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner"
 import { fetchToken } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
-
-const supabase = createClient();
 
 export default function DashboardPage() {
   const router = useRouter();

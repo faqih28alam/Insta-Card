@@ -5,7 +5,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
 
 import {
   ChartContainer,
@@ -127,13 +127,12 @@ export default function AnalyticsPage() {
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <AreaChart data={dailyClicks}>
-                <CartesianGrid vertical={false} />
+                <CartesianGrid vertical={true} />
 
                 <XAxis
                   dataKey="date"
                   tickLine={false}
                   axisLine={false}
-                  tickMargin={8}
                   tickFormatter={(value) =>
                     new Date(value).toLocaleDateString("en-US", {
                       month: "short",
@@ -141,8 +140,6 @@ export default function AnalyticsPage() {
                     })
                   }
                 />
-
-                <YAxis tickLine={false} axisLine={false} />
 
                 <ChartTooltip
                   cursor={false}
