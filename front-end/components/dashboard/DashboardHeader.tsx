@@ -125,7 +125,7 @@ export function DashboardHeader() {
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 rounded-full px-2 py-1.5 hover:bg-slate-100 transition-colors focus:outline-none">
               <Avatar className="w-7 h-7">
-                <AvatarImage src={profile.avatar_url || ""} alt={profile.display_name || "User"} />
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
                 <AvatarFallback className="text-xs bg-indigo-100 text-indigo-600 font-semibold">
                   {initials}
                 </AvatarFallback>
@@ -141,7 +141,7 @@ export function DashboardHeader() {
             {/* Profile Info Header */}
             <div className="flex items-center gap-3 px-2 py-2.5 mb-1">
               <Avatar className="w-9 h-9">
-                <AvatarImage src={profile.avatar_url || ""} alt={profile.display_name || "User"} />
+                <AvatarImage src={profile.avatar_url || undefined} alt={profile.display_name || "User"} />
                 <AvatarFallback className="text-sm bg-indigo-100 text-indigo-600 font-semibold">
                   {initials}
                 </AvatarFallback>
