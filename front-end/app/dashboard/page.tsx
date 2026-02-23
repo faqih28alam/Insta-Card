@@ -9,6 +9,7 @@ import { PhonePreview } from "@/components/dashboard/PhonePreview";
 import { Link } from "@/types";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner"
 
 const supabase = createClient();
 
@@ -84,7 +85,7 @@ export default function DashboardPage() {
     e.preventDefault();
 
     if (!newLink.title.trim() || !newLink.url.trim()) {
-      alert("Please fill in both title and URL");
+      toast.error("Please fill in both title and URL");
       return;
     }
 
@@ -108,12 +109,15 @@ export default function DashboardPage() {
         setLinks((prevLinks) => [...prevLinks, result.data]);
         setNewLink({ id: "", title: "", url: "" });
         setIsAddDialogOpen(false);
+        toast.success("Link added successfully!");
       } else {
+        toast.error("Failed to add link");
         throw new Error(result.message || "Failed to add link");
       }
+
     } catch (error: any) {
       console.error("Failed to add link", error);
-      alert(error.message || "Failed to add link. Please try again.");
+      toast.error(error.message || "Failed to add link. Please try again.");
     }
   };
 
@@ -156,11 +160,11 @@ export default function DashboardPage() {
         setLinks(links.filter((link) => link.id !== id));
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to delete link");
+        toast.error(error.message || "Failed to delete link");
       }
     } catch (error) {
       console.error("Failed to delete link", error);
-      alert("Failed to delete link. Please try again.");
+      toast.error("Failed to delete link. Please try again.");
     }
   };
 

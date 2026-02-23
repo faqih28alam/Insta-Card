@@ -1,6 +1,7 @@
 import { QRCodeCanvas } from "qrcode.react";
 import { useRef } from "react";
 import { X } from "lucide-react";
+import { toast } from "sonner";
 
 interface QRModalProps {
   open: boolean;
@@ -36,7 +37,7 @@ export default function QRModal({ open, onClose, url }: QRModalProps) {
       }
       else {
         await navigator.clipboard.writeText(url);
-        alert("Link copied to clipboard!");
+        toast.success("Link copied to clipboard!");
       }
     } catch (err) {
       console.error("Share failed", err);

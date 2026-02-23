@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import Initializer from "@/components/dashboard/Initializer";
 import { ProfileProvider } from "@/hooks/useProfile";
+import { Toaster } from "@/components/ui/sonner"
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
         <Initializer />
         <DashboardHeader />
         <div>{children}</div>
+        <Toaster />
       </ProfileProvider>
     </main>
   );

@@ -16,6 +16,7 @@ import {
 import { Check, LayoutTemplate, RotateCcw, Save } from "lucide-react";
 // import { Profile, Link } from "@/types";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 // At the top of page.tsx
 import dynamic from "next/dynamic";
@@ -181,9 +182,9 @@ export default function AppearancePage() {
           button_color: t.button_color,
         }),
       });
-      if (!response.ok) alert("Failed to save theme");
+      if (!response.ok) toast.error("Failed to save theme");
     } catch {
-      alert("Failed to save theme");
+      toast.error("Failed to save theme");
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
@@ -210,12 +211,12 @@ export default function AppearancePage() {
         }),
       });
       if (!response.ok) {
-        alert("Failed to save custom colors");
+        toast.error("Failed to save custom colors");
       } else {
-        alert("Custom colors saved!");
+        toast.success("Custom colors saved!");
       }
     } catch {
-      alert("Failed to save custom colors");
+      toast.error("Failed to save custom colors");
     } finally {
       setTimeout(() => setIsSaving(false), 500);
     }
@@ -245,13 +246,13 @@ export default function AppearancePage() {
       });
 
       if (!response.ok) {
-        alert("Failed to save layout");
+        toast.error("Failed to save layout");
       } else {
-        alert("Layout saved successfully!");
+        toast.success("Layout saved successfully!");
       }
     } catch (error) {
       console.error("Failed to save layout:", error);
-      alert("Failed to save layout");
+      toast.error("Failed to save layout");
     } finally {
       setTimeout(() => setIsSavingLayout(false), 500);
     }

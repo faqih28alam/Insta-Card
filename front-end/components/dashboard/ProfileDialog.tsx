@@ -20,6 +20,7 @@ import { apiFetch, publicFetch } from "@/lib/api";
 import { useProfile } from "@/hooks/useProfile";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 interface ProfileDialogProps {
   trigger?: React.ReactNode;
@@ -113,7 +114,7 @@ export function ProfileDialog({ trigger }: ProfileDialogProps) {
 
       if (response.ok) {
         const result = await response.json();
-        alert("Profile updated!");
+        toast.success("Profile updated!");
         if (result.data) {
           setProfile((prev) =>
             prev ? { ...prev, avatar_url: result.data } : prev
@@ -121,11 +122,11 @@ export function ProfileDialog({ trigger }: ProfileDialogProps) {
           setPreviewUrl(result.data);
         }
       } else {
-        alert("Failed to update profile");
+        toast.error("Failed to update profile");
       }
     } catch (error: any) {
       console.error("Update failed:", error);
-      alert(error.message);
+      toast.error("Failed to update profile");
     } finally {
       setIsUpdating(false);
     }

@@ -20,6 +20,7 @@ import { apiFetch, publicFetch } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
+import { toast } from "sonner";
 
 interface AddLinkHubProps {
     trigger?: React.ReactNode;
@@ -105,7 +106,7 @@ export function AddLinkHub({ trigger, onCreated }: AddLinkHubProps) {
 
             if (!response.ok) {
                 const err = await response.json();
-                alert(err.message || "Failed to create LinkHub");
+                toast.error(err.message || "Failed to create LinkHub");
                 return;
             }
 
@@ -114,11 +115,11 @@ export function AddLinkHub({ trigger, onCreated }: AddLinkHubProps) {
             router.refresh();
 
             console.log("LinkHub created successfully");
-            alert("LinkHub created successfully");
+            toast.success("LinkHub created successfully");
 
         } catch (error: any) {
             console.error("Create LinkHub failed:", error);
-            alert(error.message);
+            toast.error(error.message);
         } finally {
             setIsCreating(false);
         }
