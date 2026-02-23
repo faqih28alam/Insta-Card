@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { apiFetch } from "@/lib/api";
 import { useDragAndDrop } from "@/hooks/useDragAndDrop";
 import { LinkEditor } from "@/components/dashboard/LinkEditor";
@@ -9,14 +8,12 @@ import { PhonePreview } from "@/components/dashboard/PhonePreview";
 import { Link } from "@/types";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/useProfile";
-
-const supabase = createClient();
+import { fetchToken } from "@/lib/utils";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newLink, setNewLink] = useState<Link>({ id: "", title: "", url: "" });
-  const [token, setToken] = useState("");
   const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
   const { profile, links, setLinks, initialized } = useProfile();
 
@@ -25,6 +22,7 @@ export default function DashboardPage() {
     setLinks,
     onReorder: async (newLinks) => {
       try {
+        const token = await fetchToken();
         await apiFetch("/api/v1/links/reorder", {
           method: "POST",
           headers: {
@@ -56,16 +54,16 @@ export default function DashboardPage() {
 
   // Fetch session token
   useEffect(() => {
-    const fetchSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
+    const loadToken = async () => {
+      const token = await fetchToken();
+
+      if (!token) {
         router.push("/auth/login");
+        return;
       }
-      setToken(data.session?.access_token || "");
     };
-    if (initialized) {
-      fetchSession();
-    }
+
+    loadToken();
   }, [router]);
 
   if (!initialized || !profile) {
@@ -86,6 +84,7 @@ export default function DashboardPage() {
     }
 
     try {
+      const token = await fetchToken();
       const response = await apiFetch("/api/v1/links", {
         method: "POST",
         headers: {
@@ -115,7 +114,7 @@ export default function DashboardPage() {
   };
 
   // Handle updating a link
-  const handleUpdateLink = (
+  const handleUpdateLink = async (
     id: string,
     field: "title" | "url",
     value: string
@@ -126,6 +125,7 @@ export default function DashboardPage() {
 
     const key = `${id}-${field}`;
     if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+    const token = await fetchToken();
 
     debounceTimers.current[key] = setTimeout(() => {
       apiFetch(`/api/v1/links/${id}`, {
@@ -144,6 +144,7 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to delete this link?")) return;
 
     try {
+      const token = await fetchToken();
       const response = await apiFetch(`/api/v1/links/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
