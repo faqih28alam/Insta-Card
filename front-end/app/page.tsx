@@ -50,6 +50,9 @@ export default function LandingPage() {
           <Button
             size="lg"
             className="bg-indigo-600 hover:bg-indigo-700 px-8 text-white"
+            onClick={() => {
+              window.location.href = "/auth/sign-up";
+            }}
           >
             Claim Your Link
           </Button>

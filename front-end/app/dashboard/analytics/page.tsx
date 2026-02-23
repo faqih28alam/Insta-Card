@@ -33,62 +33,68 @@ export default function AnalyticsPage() {
   const [dailyClicks, setDailyClicks] = useState<DailyClicks[]>([]);
   const [totalClicks, setTotalClicks] = useState<number>(0);
   const { profile } = useProfile();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const getUserData = async () => {
-      if (!profile) return;
-      const profileData = profile;
+      try {
+        if (!profile) return;
+        const profileData = profile;
 
-      const { data: linksData } = await supabase
-        .from("links")
-        .select("id, title")
-        .eq("public_id", profileData.id);
+        const { data: linksData } = await supabase
+          .from("links")
+          .select("id, title")
+          .eq("public_id", profileData.id);
 
-      if (!linksData || linksData.length === 0) return;
+        if (!linksData || linksData.length === 0) return;
 
-      const linkIds = linksData.map((link) => link.id);
+        const linkIds = linksData.map((link) => link.id);
 
-      // Ambil semua klik untuk link user
-      const { data: linkClicks } = await supabase
-        .from("link_clicks")
-        .select("link_id, created_at")
-        .in("link_id", linkIds);
+        // Ambil semua klik untuk link user
+        const { data: linkClicks } = await supabase
+          .from("link_clicks")
+          .select("link_id, created_at")
+          .in("link_id", linkIds);
 
-      if (!linkClicks) return;
+        if (!linkClicks) return;
 
-      // Hitung klik per link
-      const analyticsData: LinkAnalytics[] = linkIds.map((id) => {
-        const clicks = linkClicks.filter((c) => c.link_id === id).length;
-        return {
-          link_id: id,
-          link_title: linksData.find((l) => l.id === id)?.title || "",
-          clicks,
-        };
-      });
-
-      // Total klik semua link
-      const total = analyticsData.reduce((sum, item) => sum + item.clicks, 0);
-
-      // Hitung total klik per hari dengan format "2026 Feb 09"
-      const clicksByDay: Record<string, number> = {};
-      linkClicks.forEach((c) => {
-        const date = new Date(c.created_at).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
+        // Hitung klik per link
+        const analyticsData: LinkAnalytics[] = linkIds.map((id) => {
+          const clicks = linkClicks.filter((c) => c.link_id === id).length;
+          return {
+            link_id: id,
+            link_title: linksData.find((l) => l.id === id)?.title || "",
+            clicks,
+          };
         });
-        clicksByDay[date] = (clicksByDay[date] || 0) + 1;
-      });
 
-      const dailyData: DailyClicks[] = Object.entries(clicksByDay)
-        .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-        .map(([date, totalClicks]) => ({ date, totalClicks }));
+        // Total klik semua link
+        const total = analyticsData.reduce((sum, item) => sum + item.clicks, 0);
 
-      setAnalytics(analyticsData);
-      setTotalClicks(total);
-      setDailyClicks(dailyData);
+        // Hitung total klik per hari dengan format "2026 Feb 09"
+        const clicksByDay: Record<string, number> = {};
+        linkClicks.forEach((c) => {
+          const date = new Date(c.created_at).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "2-digit",
+          });
+          clicksByDay[date] = (clicksByDay[date] || 0) + 1;
+        });
+
+        const dailyData: DailyClicks[] = Object.entries(clicksByDay)
+          .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+          .map(([date, totalClicks]) => ({ date, totalClicks }));
+
+        setAnalytics(analyticsData);
+        setTotalClicks(total);
+        setDailyClicks(dailyData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setLoading(false);
+      }
     };
-
     getUserData();
   }, [supabase]);
 
@@ -98,6 +104,17 @@ export default function AnalyticsPage() {
       color: "hsl(var(--chart-1))",
     },
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6366F1] mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center">
@@ -161,11 +178,11 @@ export default function AnalyticsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                Click per link
+              Click per link
             </CardTitle>
           </CardHeader>
           <CardContent>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 p-6">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 p-6">
               {analytics.map((item) => (
                 <li key={item.link_id}>
                   <Card className="p-4 flex flex-col items-center w-auto bg-violet-50 text-violet-600 border-violet-100 shadow-none text-sm font-semibold uppercase">
