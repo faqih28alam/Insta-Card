@@ -41,7 +41,8 @@ Aplikasi ini dilengkapi dengan fitur-fitur esensial untuk manajemen link:
 
 ## 📸 Live Demo: [LinkHub](https://link-hub-card.vercel.app/)
 
-![Preview Website](/front-end/public/preview.mp4)
+https://github.com/user-attachments/assets/773b03b0-503a-4556-8c97-ca4c72b5aa94
+
 
 ---
 
