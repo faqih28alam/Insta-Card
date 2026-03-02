@@ -219,6 +219,7 @@ export function ProfileDialog({ trigger }: ProfileDialogProps) {
               <Input
                 id="display-name"
                 value={profile.display_name || ""}
+                onKeyDown={(e) => e.stopPropagation()}
                 onChange={(e) =>
                   setProfile((prev) =>
                     prev ? { ...prev, display_name: e.target.value } : prev
@@ -233,6 +234,7 @@ export function ProfileDialog({ trigger }: ProfileDialogProps) {
               <Input
                 id="bio"
                 value={profile.bio || ""}
+                onKeyDown={(e) => e.stopPropagation()}
                 onChange={(e) =>
                   setProfile((prev) =>
                     prev ? { ...prev, bio: e.target.value } : prev
