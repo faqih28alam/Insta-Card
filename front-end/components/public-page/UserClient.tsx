@@ -205,10 +205,12 @@ export default function UserClient() {
 
         {/* Branding */}
         <div className="flex items-center justify-center gap-2 opacity-40 mt-8">
-          <Globe className="w-4 h-4" style={{ color: textColor }} />
-          <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>
-            LINKHUB
-          </span>
+          <a className="flex gap-2" href="https://link-hub-card.vercel.app">
+            <Globe className="w-4 h-4" style={{ color: textColor }} />
+            <span className="text-sm font-bold tracking-widest uppercase" style={{ color: textColor }}>
+              LINKHUB
+            </span>
+          </a>
         </div>
       </div>
 
